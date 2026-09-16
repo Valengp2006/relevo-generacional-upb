@@ -1,8 +1,13 @@
 
 ---
 workspace:
-  project_root: "./"
-  working_directory: "./"
+  folders:
+    - path: "/Users/valentina/Universidad/Simulacion/relevo_generacional_upb"
+      name: "Relevo Generacional (p5.js)"
+    - path: "/Users/valentina/Universidad/Simulacion/bitacora-clase"
+      name: "Bitácora de Clase"
+  working_directory: "/Users/valentina/Universidad/Simulacion/relevo_generacional_upb"
+  workspace_file: "/Users/valentina/Universidad/Simulacion/simulacion.code-workspace"
 ---
 
 

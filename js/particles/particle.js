@@ -1,7 +1,8 @@
 /**
- * Clase Particle — Representación individual de un nodo generativo.
- * Implementa física de interpolación (seek/arrive), micro-movimiento orgánico
- * y diferenciación de especies generacionales con transiciones de color.
+ * Clase Particle — Representación cinemática individual de un nodo generativo.
+ * Implementa comportamientos de dirección autónoma (Craig Reynolds):
+ * - seek(target): Fuerza proporcional hacia el objetivo a máxima velocidad.
+ * - arrive(target): Desaceleración progresiva dentro de un radio de frenado.
  */
 
 class Particle {
@@ -11,22 +12,17 @@ class Particle {
     this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);
     this.target = createVector(x, y);
-    
-    // Parámetros visuales
+
     this.baseRadius = CONFIG.particles.baseRadius + (index % 3 === 0 ? 1.0 : 0);
     this.radius = this.baseRadius;
     this.species = (index % 2 === 0) ? 'A' : 'B';
-    
-    // Semilla individual para fluctuación orgánica (Perlin Noise)
+
     this.noiseOffset = index * 0.17;
-    
-    // Transición de opacidad y escala
     this.alpha = 240;
     this.targetAlpha = 240;
     this.scale = 1.0;
     this.targetScale = 1.0;
-    
-    // Coloración dinámica
+
     this.updateColorPalette();
   }
 
@@ -62,8 +58,19 @@ class Particle {
   }
 
   /**
-   * Comportamiento Arrive: se mueve rápidamente hacia el objetivo
-   * y desacelera suavemente dentro del radio de frenado.
+   * Comportamiento Seek básico (fuerza directa al objetivo a velocidad crucero)
+   */
+  seek(target) {
+    let desired = p5.Vector.sub(target, this.pos);
+    desired.setMag(CONFIG.particles.maxSpeed);
+    let steer = p5.Vector.sub(desired, this.vel);
+    steer.limit(CONFIG.particles.maxForce);
+    return steer;
+  }
+
+  /**
+   * Comportamiento Arrive: acelera hacia el objetivo y desacelera suavemente
+   * al ingresar en el radio de aproximación (arriveRadius = 70px).
    */
   arrive(target) {
     let desired = p5.Vector.sub(target, this.pos);
@@ -87,23 +94,23 @@ class Particle {
   }
 
   update() {
-    // 1. Fuerza hacia el objetivo
+    // 1. Aplicar comportamiento Arrive hacia el objetivo asignado
     this.arrive(this.target);
 
-    // 2. Micro-movimiento idle constante (vida orgánica continua)
+    // 2. Micro-movimiento Browniano orgánico continuo (Ruido Perlin)
     let nX = noise(this.pos.x * CONFIG.particles.idleNoiseScale + this.noiseOffset, frameCount * 0.008);
     let nY = noise(this.pos.y * CONFIG.particles.idleNoiseScale + this.noiseOffset + 100, frameCount * 0.008);
     let idleAngle = map(nX, 0, 1, 0, TWO_PI);
     let idleForce = p5.Vector.fromAngle(idleAngle).mult(CONFIG.particles.idleForce * map(nY, 0, 1, 0.2, 1.0));
     this.applyForce(idleForce);
 
-    // 3. Integración de Euler
+    // 3. Integración de Euler y fricción
     this.vel.add(this.acc);
     this.vel.mult(CONFIG.particles.friction);
     this.pos.add(this.vel);
     this.acc.mult(0);
 
-    // 4. Interpolación suave de alpha y escala
+    // 4. Suavizado de opacidad y escala
     this.alpha = lerp(this.alpha, this.targetAlpha, 0.08);
     this.scale = lerp(this.scale, this.targetScale, 0.08);
   }
