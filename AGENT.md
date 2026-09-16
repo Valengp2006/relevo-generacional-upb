@@ -1,16 +1,3 @@
-
----
-workspace:
-  folders:
-    - path: "/Users/valentina/Universidad/Simulacion/relevo_generacional_upb"
-      name: "Relevo Generacional (p5.js)"
-    - path: "/Users/valentina/Universidad/Simulacion/bitacora-clase"
-      name: "Bitácora de Clase"
-  working_directory: "/Users/valentina/Universidad/Simulacion/relevo_generacional_upb"
-  workspace_file: "/Users/valentina/Universidad/Simulacion/simulacion.code-workspace"
----
-
-
 # agent.md — Relevo Generacional (Fórum UPB × Future Leaders Forum)
 
 ## Encargo
@@ -24,111 +11,110 @@ Diseñar una presentación web generativa e interactiva (HTML/CSS/JS, pantalla c
 - Referentes: Memo Akten "Forms" (conceptual, no estético) + ForumTEDTALK del profesor (caso real, mismo guion — no imitar)
 
 ## Etapa actual
-**Actividad 02 → PROTOTIPO FUNCIONAL v1 PUBLICADO.**
+**Actividad 02 → Escultura de palabras (Plensa) diseñada e implementada como patch; guion completo (13/13 slides) con texto real del cliente; fotos del cliente seleccionadas, en proceso de optimización para web.**
 
-El código base está escrito, versionado en Git y desplegado en producción:
-
-- 🌐 **GitHub Pages (en vivo):** [https://valengp2006.github.io/relevo-generacional-upb/](https://valengp2006.github.io/relevo-generacional-upb/)
-- 📦 **Repositorio GitHub:** [https://github.com/Valengp2006/relevo-generacional-upb](https://github.com/Valengp2006/relevo-generacional-upb)
-- **Último commit:** `02620f9` — *fix: corregir layout de texto — fontSize windowWidth×0.05, textAlign(CENTER,TOP), margen Y height×0.35 y reset offscreen en resize*
+- 🌐 **GitHub Pages (en vivo):** <https://valengp2006.github.io/relevo-generacional-upb/>
+- 📦 **Repositorio GitHub:** <https://github.com/Valengp2006/relevo-generacional-upb>
+- Este documento describe el estado **después** de la sesión del 2026-09-16; falta que Valen aplique los patches de esta sesión sobre los archivos reales del repo y confirme que corren sin errores.
 
 ### Estado del código por archivo
+
 | Archivo | Estado | Descripción |
-|:---|:---|:---|
+|---|---|---|
 | `index.html` | ✅ Listo | Shell fullscreen con HUD flotante, capa documental adaptativa y carga de scripts |
 | `css/style.css` | ✅ Listo | Estilos fullscreen, paleta magenta/rojo/azul del evento, tipografía grotesca Inter |
 | `lib/p5.min.js` | ✅ Listo | Binario local p5.js v1.9.4 (100% offline) |
-| `js/config.js` | ✅ Listo | Tokens de color del swirl, parámetros de simulación (1,800 partículas, seek/arrive) |
-| `js/data/slides.js` | ⚠️ 3/13 slides | 3 slides de prueba implementados (slides 1-3, Acto 1). Faltan slides 4-13. |
+| `js/config.js` | ✅ Listo | Tokens de color del swirl, parámetros de simulación (1.800 partículas, seek/arrive) |
+| `js/data/slides.js` | ✅ **13/13 slides**, texto real del guion del cliente (ver sección abajo) | pt/en siguen siendo placeholder = mismo texto en español; pendiente traducción real |
 | `js/particles/particle.js` | ✅ Listo | Clase Particle con seek, arrive, Perlin noise, especies generacionales |
 | `js/particles/particle-system.js` | ✅ Listo | Pool continuo, aristas, retracción adaptativa ante fotos |
-| `js/sampler/target-sampler.js` | ✅ Corregido | Canvas offscreen con `textAlign(CENTER, TOP)`, `fontSize = width*0.05`, margen Y `height*0.35`, `reset()` en resize |
-| `js/sculptures/sculpture-definitions.js` | ✅ Listo | Generadores geométricos: monolito, esfera, tríada, clústeres, doble hélice, portal QR |
-| `js/sketch.js` | ✅ Corregido | `windowResized` limpia el offscreen antes de redimensionar; listeners teclado completos |
-| `assets/logos/forum_upb.svg` | ⚠️ Placeholder | Logosímbolo vectorial provisional. Falta archivo oficial con Belwe real. |
-| `assets/images/` | ⚠️ Placeholders SVG | 6 tarjetas placeholder para slides con foto. Faltan fotografías reales del cliente. |
+| `js/sampler/target-sampler.js` | 🆕 **Patch escrito, pendiente de aplicar** | Se agrega `extractPoints()` (helper compartido) y `sampleWordSculpture(sculptureType, words, count)` — usa las 8 siluetas de `SCULPTURES` como máscara (`globalCompositeOperation:'source-in'`) rellena con las palabras del propio slide en vez de partículas sueltas |
+| `js/sculptures/sculpture-definitions.js` | ✅ Sin cambios | Los 8 generadores geométricos existentes ahora hacen de **máscara de silueta**, no de posición final — no requirió tocarse |
+| `js/sketch.js` | 🆕 **Patch escrito, pendiente de aplicar** | En `applyState()`, rama `else` (modo escultura): cambia de `sculptureFn(...)` a `sampler.sampleWordSculpture(sType, words, count)` |
+| `assets/logos/forum_upb.svg` | ⚠️ Placeholder | Logosímbolo vectorial provisional. Falta archivo oficial con Belwe real |
+| `assets/images/` | 🆕 **Fotos elegidas, en optimización** | slide-2.jpg (86 KB ✓), slide-5.jpg (135 KB ✓), slide-12.jpeg (115 KB ✓) ya listas. slide-4.jpg (1,8 MB), slide-8.jpg (2,2 MB) y slide-13 (convertida de .tif a .jpg, 4,7 MB) pendientes de redimensionar/comprimir a ≤250 KB / máx. 1920px de ancho |
 
-## Bugs corregidos (sesión 2026-09-16)
-- **Texto cortado lateralmente:** `textSize` reducido a `width * 0.05` (acotado 22-46px) con ancho máximo `width * 0.8` y salto de línea automático.
-- **Texto tapando la barra superior:** `textAlign(CENTER, TOP)` con posición Y a `height * 0.35` reserva el espacio de la barra HUD.
-- **Canvas offscreen obsoleto en resize:** `windowResized()` llama a `sampler.reset()` antes de redimensionar, eliminando el `p5.Graphics` con las dimensiones viejas.
+## Cambio de diseño — Escultura de palabras (Plensa)
 
-## Pendiente / próximos pasos
-- [ ] **Completar los 13 slides** en `js/data/slides.js` (faltan slides 4-13 del Acto 1 completo, Actos 2, 3 y 4)
-- [ ] **Definir y confirmar la secuencia de esculturas** (1 por slide o 1 por acto) que sostenga la narrativa en `js/sculptures/sculpture-definitions.js`
-- [ ] **Probar legibilidad del texto-partícula en proyección grande** (pantalla mínima 1920×1080) — Riesgo #2 aún abierto
-- [ ] **Conseguir el archivo de marca vectorial** (SVG/EPS) del logo Future Leaders Forum para extraer tonos exactos de rosa/rojo/azul
-- [ ] **Recibir carpeta de materiales del cliente** (fotos de Lore) y asignarlas a `assets/images/` según slide
-- [ ] **Conseguir la fuente Belwe** (licencia Adobe Fonts / UPB) o confirmar que se queda el placeholder grotesco
-- [ ] **Integrar el logo institucional real** (Fórum UPB 90 años) en la esquina fija del HUD
-- [ ] **Autoevaluación final** (4 criterios × 25 pts) una vez el sistema esté completo y explicado
+**Concepto:** en vez de una figura abstracta geométrica pura, la "escultura" de cada slide está formada por las **palabras del propio guion de ese slide**, distribuidas dentro del contorno de la silueta narrativa del acto (estilo esculturas de letras tipo Jaume Plensa — ver referencia visual que aportó Valen). Las palabras a su vez están hechas de partículas. Refuerza la idea central del reto: la misma materia se organiza como lenguaje verbal y como forma, sin añadir ni quitar elementos.
+
+**Implementación (mecanismo):**
+1. Se dibuja la silueta actual (`SCULPTURES[slide.sculptureType]`, sin cambios) como una nube de puntos rellenos en un canvas oculto → esto es la **máscara**.
+2. Se cambia `globalCompositeOperation` a `'source-in'`.
+3. Se "baldosan" las palabras del slide (título + subtítulo + narrativa del idioma activo) en filas, con jitter de posición/rotación, por encima de la máscara — el compositing hace que solo sobrevivan los píxeles de texto que caen dentro de la silueta.
+4. Se muestrean esos píxeles igual que ya hacía `sampleText` (helper `extractPoints` compartido entre ambos modos).
+
+**Toggle de dos estados (sin cambios respecto a la decisión anterior):**
+- Modo **texto**: título del slide, plano, sin silueta (como antes).
+- Modo **escultura**: ahora es la escultura de palabras descrita arriba, en vez de la figura geométrica pura.
+- Transición manual (tecla `T` / botón), nunca automática — Alma controla el ritmo en vivo.
+
+**Pendiente de validar en el navegador real (no se pudo correr en esta sesión):**
+- Rendimiento del muestreo (`sampleWordSculpture` dibuja ~6.000 círculos de máscara + el baldosado de palabras cada vez que cambia slide/modo — no corre en el loop de `draw()`, pero si se siente una pausa al presionar `T`, bajar ese conteo a ~2.500).
+- Legibilidad de las palabras a la escala de proyección real (Riesgo #2, sigue abierto).
+
+## Guion completo (13/13 slides) — texto real del cliente
+
+Se reemplazó el copy editorial inventado que tenían los slides 1–3 de prueba (ej. "90 años de tradición y liderazgo académico") por el texto **literal** del guion entregado por Alma. `subtitle`/`narrative` se dejan vacíos donde el guion no trae más que el título — no se inventó contenido adicional.
+
+| # | Acto | Texto | Foto |
+|---|---|---|---|
+| 1 | Origen | RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO / @centrodeeventosupb | — |
+| 2 | Origen | ¿un gran auditorio solo para hacer grados? | slide-2.jpg |
+| 3 | Origen | Los eventos no llegaron a la Universidad. / La Universidad decidió encontrarse con el mundo. | — |
+| 4 | Origen | Academia + Industria + Ciudad | slide-4.jpg |
+| 5 | Origen | Los eventos nunca fueron el objetivo. / El impacto sí. | slide-5.jpg |
+| 6 | Comunidad | Un evento trae personas. / Una comunidad trae transformación. | — |
+| 7 | Comunidad | El talento crece a la velocidad de la confianza. | — |
+| 8 | Comunidad | La experiencia construye el camino. / Las nuevas generaciones descubren nuevas rutas. | slide-8.jpg |
+| 9 | Comunidad | Una visión. / Dos generaciones. | — |
+| 10 | Relevo | El crecimiento no ocurre cuando una generación reemplaza a otra. / Ocurre cuando trabajan juntas. | — |
+| 11 | Relevo | Los jóvenes no son el futuro. / Son el presente que muchas organizaciones aún no ven. | — |
+| 12 | Relevo | El futuro no se hereda. / Se construye. | slide-12.jpeg |
+| 13 | Apertura | @centrodeeventosupb | slide-13.jpg |
+
+No hay pie de foto en ninguna diapositiva (decisión de Valen).
+
+## Fotos del cliente — criterio de selección
+Valen ya eligió y descargó las 6 fotos de la galería del cliente:
+- **slide-2** — ceremonia de grados en el auditorio (encaja con "¿un gran auditorio solo para hacer grados?")
+- **slide-4** — sala de evento montada
+- **slide-5** — público en auditorio viendo una presentación
+- **slide-8** — grupo de personas trabajando alrededor de una mesa (encaja con "nuevas rutas")
+- **slide-12** — escenario con público, formato vertical
+- **slide-13** — fachada de edificio de noche (cierre neutro, no compite con el QR)
+
+Herramienta local (`redimensionar-fotos.html`, HTML+canvas, corre en el navegador sin subir nada a ningún servidor) entregada para llevar las 3 fotos pesadas a ≤250 KB / máx. 1920px de ancho antes de subirlas a `assets/images/`.
 
 ## Análisis de referentes (hecho)
 - **Forms (Akten/Quayola):** el movimiento del cuerpo se abstrae en estructura; lo que importa no es la técnica de tracking sino que la forma revela relaciones ocultas (poder, equilibrio, tensión) entre cuerpo y entorno. Lección para el reto: el sistema debe revelar una relación, no representar un cuerpo.
 - **ForumTEDTALK (profesor):** mismo guion/cliente ya resuelto por otra persona. Sirve como caso de referencia de restricciones reales (pantalla completa, navegación ES/PT, QR final), no como estética a copiar.
-- **Verificación tipográfica sobre capturas del referente:** los titulares y texto corrido de los slides usan un grotesco sans-serif bold (sin serifas, trazo uniforme) — coherente con reservar Belwe solo para el logosímbolo institucional y usar un grotesco libre (Inter/Switzer) para el resto del sistema. El logo UPB/Fórum se usa como **imagen** para importar a los slides, no como fuente a replicar en código — no bloquea el prototipado.
+- **Verificación tipográfica sobre capturas del referente:** los titulares y texto corrido de los slides usan un grotesco sans-serif bold — coherente con reservar Belwe solo para el logosímbolo institucional y usar un grotesco libre (Inter/Switzer) para el resto del sistema.
 
-## Concepto (validado por Valen, con un ajuste de composición)
+## Concepto de fondo (grafo estructural, sigue vigente como base del sistema)
 Sistema de dos "generaciones" de nodos que empiezan separadas y terminan tejiendo una sola estructura compartida — encarnando literal y estructuralmente la idea de "relevo" (no reemplazo, sino trabajo conjunto). Arco en 4 actos mapeado a los 13 slides:
-1. Origen (slides 1–5): un solo núcleo/auditorio → tríada academia+industria+ciudad
-2. Comunidad y confianza (6–9): clustering orgánico, conexiones que ganan grosor/opacidad
+1. Origen (1–5): un solo núcleo/auditorio → tríada academia+industria+ciudad
+2. Comunidad (6–9): clustering orgánico, conexiones que ganan grosor/opacidad
 3. Relevo (10–12): dos "especies" de nodos entrelazándose en una malla común
-4. Apertura (13): la malla se abre en una grilla/portal (gancho visual hacia el QR de cierre)
+4. Apertura (13): la malla se abre en una grilla/portal (gancho hacia el QR)
 
-**Ajuste de Valen (importante):** el sistema de partículas NO reemplaza el contenido documental. En los slides donde el guion indica foto, debe aparecer una foto real de la galería de materiales del cliente, más logo/iconos de la universidad en esa diapositiva. El sistema de partículas pasa a ser un **complemento visual continuo** — corre a lo largo de toda la presentación (fondo, marco o capa que dialoga con foto/logo/texto) representando el relevo, sin sustituir esos elementos de marca/documentales.
+La capa documental (foto + logo) es adaptativa: transición fluida según si el slide tiene o no foto, dando protagonismo a las partículas como acompañantes sin taparla del todo.
 
-Implicación de composición: pensar el layout como capas, **adaptativas según el slide**:
-- **Slides sin foto** (ej. 1, 3, 6, 7, 9, 10, 11): el grafo puede tomar más protagonismo — ocupa más espacio visual, el texto flota sobre él.
-- **Slides con foto** (2, 4, 5, 8, 12, 13): transición fluida hacia un estado donde la foto queda visible y no tapada, pero el grafo sigue presente y activo — no desaparece, se retrae (ej. se comprime a un borde/zona, baja opacidad, o rodea el marco de la foto) sin dejar de acompañar.
-- La regla general: **el grafo nunca desaparece, pero cede protagonismo espacial cuando hay foto**, y lo recupera cuando no la hay. Esa respiración (expande/retrae) es en sí misma parte de la gramática — leerla como "el relevo cede espacio a la evidencia documental, y vuelve a tomarlo".
-- Logo Fórum/UPB 90 años: posición fija (esquina), siempre legible, no debe competir con el grafo.
-
-Ambas capas deben convivir sin que la generativa opaque la legibilidad de foto/logo/texto.
-
-## Gramática de transición entre slides (validado)
-
-**Principio transversal:** el sistema es una sola simulación continua de principio a fin — nunca hay reset. Cada slide define un *estado objetivo* (nº de clusters, fuerzas de atracción, grosor/opacidad de aristas, posición de retiro si hay foto) y el motor de fuerzas interpola hacia ese estado al cambiar de slide, en cualquier dirección (adelante o atrás reutiliza el mismo mecanismo, solo reapunta el objetivo). Argumento: resetear ilustraría *reemplazo* generacional; interpolar sin romper el estado ilustra *herencia y transformación*, que es el concepto central.
-
-- **Acto 1 — Origen (1–5):** núcleo único y denso en el slide 1. La fisión en tríada (academia/industria/ciudad) ocurre en la transición 2→3. Los retiros por foto (slides 2, 4, 5) no revierten la fisión una vez ocurrida.
-- **Acto 2 — Comunidad y confianza (6–9):** los clusters ya no cambian de cantidad ni agrupación; lo único que evoluciona es grosor/opacidad de las aristas dentro y —hacia el final— entre clusters. El progreso acumulado de aristas no se resetea al retraerse en el slide 8 (foto).
-- **Acto 3 — Relevo (10–12):** la transición 9→10 es la más relevante — recategoriza los *mismos* nodos de 3 clusters institucionales a 2 "especies" generacionales mediante migración visible (cambio de tamaño/forma/color en vivo), no aparición de nodos nuevos, para argumentar continuidad de identidad con cambio de rol. El entretejido entre especies ya no se separa de nuevo al retraerse en el slide 12.
-- **Acto 4 — Apertura (13):** única transición que cambia la lógica de fuerzas: de orgánico (atracción/repulsión libre) a posiciones fijas tipo grilla/portal, argumentando que el relevo tejido resuelve en estructura aprovechable (gancho hacia el QR).
-- **Ritmo:** transiciones de 1.5–2.5s con easing; micro-movimiento idle constante incluso sin cambio de slide; navegación 100% manual (teclado/táctil), sin timing de voz que sincronizar.
-
-## CAMBIO DE DISEÑO — partículas que forman texto y escultura (nuevo, en definición)
-
-**Propuesta de Valen:** las partículas dejan de ser solo fondo/marco y pasan a **formar el texto del slide**; tras un tiempo, transicionan de forma llamativa hacia una **figura/escultura representativa** del tema de ese slide. Una tecla/botón permite alternar manualmente entre estado-texto y estado-figura. La escultura va cambiando slide a slide manteniendo la línea narrativa. Todas las transiciones (entre estados y entre slides) deben ser fluidas y **bidireccionales**: el sentido se conserva sin importar la dirección de navegación.
-
-**Lectura conceptual (por qué esto fortalece el encargo):** el sistema deja de "acompañar" el discurso y pasa a *ser* el discurso — la misma materia (los mismos nodos) se organiza como lenguaje verbal y como forma. Eso es exactamente la pregunta de la unidad ("¿cómo una estructura de elementos relacionados se convierte en un lenguaje visual capaz de construir el significado de un discurso?"). El toggle texto↔figura es, además, un argumento en sí: nada se añade ni se elimina, solo cambia la relación entre los mismos elementos.
-
-**Riesgo #1 — traducción: RESUELTO.** Para este ejercicio Valen tiene libertad de que el texto sea partículas; no es obligatorio mantenerlo traducible vía DOM/traductor del navegador. Se implementa con la opción (b) de todos modos (objeto JS con strings por idioma + selector propio), porque sigue siendo la forma más simple de tener el sistema listo para PT/ES/EN sin depender del navegador — pero ya no es una restricción del cliente, es preferencia de diseño propia.
-
-**Riesgo #3 — timing: RESUELTO.** La transición texto→figura es **manual** (tecla/botón), no automática por temporizador. Alma controla el ritmo en vivo.
-
-**Riesgo #2 — legibilidad:** sigue abierto, se valida en el prototipo.
-
-**Implicación técnica:** un único sistema de partículas con *pool fijo* de nodos y objetivos intercambiables. Texto y figura se resuelven igual: se rasteriza el contenido (texto en canvas offscreen; silueta de escultura desde SVG path) y se muestrean puntos que se asignan como targets a las partículas. Esto hace la bidireccionalidad trivial: cualquier estado es solo otro conjunto de targets, y navegar hacia atrás es reapuntar, no revertir una animación.
-
-**Pendiente de definir:** qué escultura/figura corresponde a cada uno de los 13 slides (debe sostener la línea narrativa de los 4 actos, no ser iconos ilustrativos sueltos).
+## Gramática de transición entre slides (validada, sin cambios)
+Principio transversal: **nunca hay reset**. Cada slide define un estado objetivo y el motor interpola hacia él en cualquier dirección — retroceder reutiliza el mismo mecanismo, solo reapunta el objetivo. Transiciones de 1.5–2.5s con easing; micro-movimiento idle constante; navegación 100% manual (teclado/táctil).
 
 ## Gramática visual — tipografía y color
-**Paleta del evento (confirmada):** tomada del logo "IMEX Future Leaders Forum — World Cup Edition 2026" — un swirl en **rosa/magenta, rojo y azul**, con texto de marca en gris oscuro/negro. Esta es la paleta que rige el sistema (por encima de la institucional UPB, que queda como referencia secundaria para el lockup del logo Fórum/UPB en su esquina). Se implementa igualmente como tokens de color para poder ajustar tono/saturación exactos una vez se tenga el archivo de marca vectorial.
+**Paleta del evento (confirmada):** swirl rosa/magenta, rojo y azul del logo "IMEX Future Leaders Forum — World Cup Edition 2026", implementada como tokens de color. Rige por encima de la institucional UPB (Rojo/Oro/Negro), que queda como referencia secundaria para el lockup del logo Fórum/UPB.
 
-**Tipografía institucional UPB (confirmado en el manual de imagen corporativa):**
-- Logosímbolo / identificación de la Universidad: **Belwe** (Medium para el logosímbolo, Normal mayúscula sostenida para nombres de unidad). Es una fuente de licencia (Adobe Fonts / activo propio de la Universidad) — si el material que comparta Lore incluye el archivo, se usa directamente vía @font-face; si no, placeholder visual con una slab serif de época similar (ej. Bevan/Rockwell de Google Fonts) mientras se consigue la real. El logo se usará como imagen importada en los slides, no se replica tipográficamente en el código.
-- Texto corrido de unidades de servicio: **SwitzerlandLight** (clon de Helvetica) — para body copy del sistema se puede usar un grotesco equivalente y libre (ej. Inter o Switzer de Fontshare) que dialogue con ese espíritu sin depender de una fuente pagada. Confirmado contra referentes: los titulares del ForumTEDTALK usan este tipo de grotesco en peso bold.
-- Regla de la UPB: nunca Light/Bold/Itálica/Subrayada sobre el logosímbolo — se respeta para el uso del logo, no aplica necesariamente al resto del sistema tipográfico.
-
-*(Colores institucionales UPB — Rojo, Oro, Negro, con alternativas Azul/Verde/Vinotinto — quedan como referencia del manual de marca, pero no son la paleta rectora del sistema; ver paleta del evento arriba.)*
+**Tipografía:** Belwe (Medium/Normal) para el logosímbolo institucional cuando se consiga el archivo real — placeholder grotesco (Bevan/Rockwell) mientras tanto. Grotesco libre (Inter) para el resto del sistema.
 
 ## Pendiente / próximos pasos
-- [ ] **Definir la secuencia de esculturas** (1 por slide o 1 por acto) que sostenga la narrativa
-- [ ] Fijar presupuesto de partículas y probar legibilidad del texto-partícula en proyección grande
-- [ ] Conseguir el archivo de marca vectorial (SVG/EPS) del logo Future Leaders Forum para extraer los tonos exactos de rosa/rojo/azul
-- [ ] Definir jerarquía de capas y legibilidad (texto/foto/logo siempre legibles sobre la capa generativa)
-- [ ] Definir qué fotos de la galería del cliente van en qué slide (pendiente: Valen aún no tiene la carpeta de materiales — la compartirá Lore)
-- [ ] Conseguir el archivo real de la fuente Belwe (o confirmar que no está disponible y queda el placeholder)
-- [ ] Prototipar el sistema de partículas/grafo en HTML/CSS/JS (probablemente canvas + fuerzas tipo d3-force), ya como capa de fondo/marco, implementando la gramática de transición por actos definida arriba
-- [ ] Estructurar los 13 textos como datos separados (para el toggle de idioma PT/ES/EN)
-- [ ] Construir navegación fullscreen (teclado + táctil) y modo offline descargable
-- [ ] Autoevaluación final (4 criterios x 25 pts) una vez el sistema esté funcionando y explicado
+- [ ] **Aplicar los patches de esta sesión** en `target-sampler.js` y `sketch.js`, y probar en navegador
+- [ ] **Probar rendimiento y legibilidad** de la escultura de palabras en pantalla grande — si hay pausa al presionar T, bajar de 6.000 a ~2.500 puntos de máscara
+- [ ] **Redimensionar/comprimir** slide-4.jpg, slide-8.jpg y slide-13.jpg a ≤250 KB (herramienta ya entregada)
+- [ ] **Confirmar `sculptureType` de cada slide** contra la escultura de palabras — validar que la silueta sigue siendo legible ahora que está hecha de texto, no de puntos sueltos
+- [ ] Conseguir el archivo de marca vectorial (SVG/EPS) del logo Future Leaders Forum
+- [ ] Conseguir la fuente Belwe real (o confirmar placeholder definitivo)
+- [ ] Integrar el logo institucional real (Fórum UPB 90 años) en la esquina fija del HUD
+- [ ] Traducir pt/en reales (hoy son copia del español)
+- [ ] Autoevaluación final (4 criterios × 25 pts) una vez el sistema esté completo y explicado
