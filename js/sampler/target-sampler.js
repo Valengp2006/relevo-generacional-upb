@@ -1,7 +1,13 @@
 /**
  * Clase TargetSampler — Muestreador de texto en canvas oculto (p5.Graphics).
  * Renderiza el texto del slide activo y extrae las coordenadas de los píxeles
- * que posean una opacidad (canal alfa) mayor a 128.
+ * con opacidad mayor a 128.
+ * 
+ * Configuración de Layout:
+ * - textAlign(CENTER, TOP) para evitar solapamiento con la barra superior.
+ * - Desplazamiento en Y (height * 0.35) que reserva el espacio para logos e indicadores.
+ * - Tamaño de texto proporcional (width * 0.048 acotado) con ajuste responsivo.
+ * - Ancho máximo (width * 0.8) con salto de línea automático para evitar cortes laterales.
  */
 
 class TargetSampler {
@@ -11,8 +17,21 @@ class TargetSampler {
 
   ensureGraphics(w, h) {
     if (!this.offscreen || this.offscreen.width !== w || this.offscreen.height !== h) {
+      if (this.offscreen) {
+        this.offscreen.remove();
+      }
       this.offscreen = createGraphics(w, h);
       this.offscreen.pixelDensity(1);
+    }
+  }
+
+  /**
+   * Resetea y limpia el canvas oculto, liberando memoria al redimensionar la ventana.
+   */
+  reset() {
+    if (this.offscreen) {
+      this.offscreen.remove();
+      this.offscreen = null;
     }
   }
 
@@ -30,42 +49,47 @@ class TargetSampler {
     pg.clear();
     pg.fill(255, 255, 255, 255);
     pg.noStroke();
-    pg.textAlign(CENTER, CENTER);
 
-    // Ajuste proporcional del tamaño tipográfico según ancho de pantalla
-    let fontSize = width > 1200 ? 76 : (width > 800 ? 52 : 36);
-    if (textString.length > 25) {
-      fontSize *= 0.75;
+    // Alineación superior y centrada en X para reservar el tope para la barra de navegación
+    pg.textAlign(CENTER, TOP);
+
+    // Tamaño tipográfico proporcional: windowWidth * 0.05 acotado entre 22px y 46px
+    let fontSize = constrain(width * 0.05, 22, 46);
+    if (textString.length > 22) {
+      fontSize *= 0.80;
     }
 
     pg.textSize(fontSize);
     pg.textStyle(BOLD);
 
-    // Envolver texto en múltiples líneas si excede el ancho disponible
-    let lines = this.wrapText(pg, textString, width * 0.75);
-    let lineHeight = fontSize * 1.25;
-    let totalHeight = lines.length * lineHeight;
-    let startY = height / 2 - (totalHeight / 2) + (fontSize * 0.45);
+    // Ancho máximo del bloque de texto: 80% del ancho de ventana → sin cortes laterales
+    let maxTextWidth = width * 0.8;
+    // Posición X centrada
+    let startX = width / 2;
+    // Eje Y desplazado a height * 0.35 para dejar espacio libre a la barra superior
+    let startY = height * 0.35;
+
+    // Salto de línea automático mediante wrapText
+    let lines = this.wrapText(pg, textString, maxTextWidth);
+    let lineHeight = fontSize * 1.28;
 
     for (let i = 0; i < lines.length; i++) {
-      pg.text(lines[i], width / 2, startY + i * lineHeight);
+      pg.text(lines[i], startX, startY + i * lineHeight);
     }
 
     // Cargar píxeles del canvas oculto
     pg.loadPixels();
 
-    // Determinar salto de muestreo para aproximar el desiredCount
-    let sampleStep = max(2, floor(sqrt((width * height) / (desiredCount * 40))));
+    // Muestreo adaptable para extraer coordenadas con opacidad > 128
+    let sampleStep = max(2, floor(sqrt((width * height) / (desiredCount * 42))));
     let points = [];
 
-    // Extraer coordenadas de píxeles con opacidad mayor a 128 (pg.pixels[index + 3] > 128)
     for (let y = 0; y < height; y += sampleStep) {
       for (let x = 0; x < width; x += sampleStep) {
         let index = (x + y * width) * 4;
         let alpha = pg.pixels[index + 3];
 
         if (alpha > 128) {
-          // Agregar sutil variación aleatoria para naturalidad del conjunto
           points.push({
             x: x + random(-1.2, 1.2),
             y: y + random(-1.2, 1.2)
@@ -74,7 +98,7 @@ class TargetSampler {
       }
     }
 
-    // Ordenar espacialmente para minimizar cruces en la interpolación física
+    // Ordenamiento espacial para interpolación suave y sin cruces
     points.sort((a, b) => (a.x + a.y * 0.5) - (b.x + b.y * 0.5));
 
     return points;

@@ -36,7 +36,14 @@ function draw() {
 }
 
 function windowResized() {
+  // 1. Liberar el canvas offscreen obsoleto antes de redimensionar
+  //    para que el siguiente sampleText() cree uno nuevo con las dimensiones correctas.
+  if (sampler) {
+    sampler.reset();
+  }
+  // 2. Ajustar el canvas principal al nuevo tamaño de ventana
   resizeCanvas(windowWidth, windowHeight);
+  // 3. Recalcular y reasignar los objetivos de las partículas
   applyState();
 }
 
