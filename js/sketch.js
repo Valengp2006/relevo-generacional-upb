@@ -111,10 +111,16 @@ function applyState() {
     // Renderizado offscreen y muestreo de píxeles con opacidad > 128
     let headline = slide.title[currentLang];
     targets = sampler.sampleText(headline, CONFIG.particles.count);
-  } else {
-    // Generación geométrica paramétrica de esculturas
-    let sculptureFn = SCULPTURES[slide.sculptureType] || SCULPTURES.monolith_core;
-    targets = sculptureFn(CONFIG.particles.count, width, height);
+  }  else {
+    // Escultura de palabras: la silueta geométrica actúa como máscara,
+    // rellenada con las propias palabras del guion de este slide (estilo Plensa).
+    let sType = (slide.sculptureType && SCULPTURES[slide.sculptureType])
+      ? slide.sculptureType
+      : 'monolith_core';
+    let words = [slide.title[currentLang], slide.subtitle[currentLang], slide.narrative[currentLang]]
+      .filter(t => t && t.length > 0)
+      .join(' ');
+    targets = sampler.sampleWordSculpture(sType, words, CONFIG.particles.count);
   }
 
   // 5. Asignar los objetivos al pool continuo (con seek y arrive activo)
