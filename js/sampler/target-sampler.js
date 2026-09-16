@@ -1,13 +1,9 @@
 /**
- * Clase TargetSampler — Muestreador de texto en canvas oculto (p5.Graphics).
- * Renderiza el texto del slide activo y extrae las coordenadas de los píxeles
- * con opacidad mayor a 128.
- * 
- * Configuración de Layout:
- * - textAlign(CENTER, TOP) para evitar solapamiento con la barra superior.
- * - Desplazamiento en Y (height * 0.35) que reserva el espacio para logos e indicadores.
- * - Tamaño de texto proporcional (width * 0.048 acotado) con ajuste responsivo.
- * - Ancho máximo (width * 0.8) con salto de línea automático para evitar cortes laterales.
+ * Clase TargetSampler — Muestreador de texto y escultura de palabras en canvas oculto (p5.Graphics).
+ * - sampleText: renderiza el titular del slide activo con márgenes superiores para no tapar el HUD.
+ * - sampleWordSculpture: escultura de palabras (estilo Plensa) usando siluetas de SCULPTURES como máscara
+ *   ('source-in') y baldosando las palabras del guion.
+ * - extractPoints: helper compartido que extrae coordenadas {x, y} de los píxeles con opacidad > 128.
  */
 
 class TargetSampler {
@@ -64,9 +60,7 @@ class TargetSampler {
 
     // Ancho máximo del bloque de texto: 80% del ancho de ventana → sin cortes laterales
     let maxTextWidth = width * 0.8;
-    // Posición X centrada
     let startX = width / 2;
-    // Eje Y desplazado a height * 0.35 para dejar espacio libre a la barra superior
     let startY = height * 0.35;
 
     // Salto de línea automático mediante wrapText
@@ -77,36 +71,8 @@ class TargetSampler {
       pg.text(lines[i], startX, startY + i * lineHeight);
     }
 
-  return this.extractPoints(pg, desiredCount);
-
-  wrapText(pg, text, maxWidth) {
-    let words = text.split(' ');
-    let lines = [];
-    let currentLine = '';
-
-    for (let i = 0; i < words.length; i++) {
-      let testLine = currentLine.length === 0 ? words[i] : currentLine + ' ' + words[i];
-      let testWidth = pg.textWidth(testLine);
-
-      if (testWidth > maxWidth && currentLine.length > 0) {
-        lines.push(currentLine);
-        currentLine = words[i];
-      } else {
-        currentLine = testLine;
-      }
-    }
-    if (currentLine.length > 0) {
-      lines.push(currentLine);
-    }
-    return lines;
+    return this.extractPoints(pg, desiredCount);
   }
-}
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = TargetSampler;
-}
-
-// --- añadir dentro de la clase TargetSampler ---
 
   /**
    * Extrae coordenadas {x,y} de los píxeles con opacidad > 128
@@ -144,9 +110,18 @@ if (typeof module !== 'undefined' && module.exports) {
     pg.push();
     pg.noStroke();
     pg.fill(255);
-    let maskPts = SCULPTURES[sculptureType](6000, width, height);
-    let dotR = max(3, width * 0.006);
-    for (let p of maskPts) pg.circle(p.x, p.y, dotR);
+    let sculptureFn = (typeof SCULPTURES !== 'undefined' && SCULPTURES[sculptureType])
+      ? SCULPTURES[sculptureType]
+      : (typeof SCULPTURES !== 'undefined' && SCULPTURES.monolith_core ? SCULPTURES.monolith_core : null);
+
+    if (sculptureFn) {
+      // 3000 puntos para una silueta nítida sin congelar el hilo de render
+      let maskPts = sculptureFn(3000, width, height);
+      let dotR = max(3, width * 0.007);
+      for (let p of maskPts) {
+        pg.circle(p.x, p.y, dotR);
+      }
+    }
     pg.pop();
 
     // 2) Las palabras solo sobreviven donde ya hay máscara
@@ -159,7 +134,11 @@ if (typeof module !== 'undefined' && module.exports) {
     pg.textStyle(BOLD);
     pg.textAlign(LEFT, TOP);
 
-    let wordList = words.split(' ').filter(w => w.length > 0);
+    let wordList = (words && words.trim().length > 0)
+      ? words.split(/\s+/).filter(w => w.length > 0)
+      : ['RELEVO'];
+    if (wordList.length === 0) wordList = ['RELEVO'];
+
     let fontSize = constrain(width * 0.026, 14, 30);
     pg.textSize(fontSize);
 
@@ -185,3 +164,30 @@ if (typeof module !== 'undefined' && module.exports) {
 
     return this.extractPoints(pg, desiredCount);
   }
+
+  wrapText(pg, text, maxWidth) {
+    let words = text.split(' ');
+    let lines = [];
+    let currentLine = '';
+
+    for (let i = 0; i < words.length; i++) {
+      let testLine = currentLine.length === 0 ? words[i] : currentLine + ' ' + words[i];
+      let testWidth = pg.textWidth(testLine);
+
+      if (testWidth > maxWidth && currentLine.length > 0) {
+        lines.push(currentLine);
+        currentLine = words[i];
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine.length > 0) {
+      lines.push(currentLine);
+    }
+    return lines;
+  }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = TargetSampler;
+}

@@ -58,8 +58,15 @@ function applyState() {
   // 1. Actualizar textos de la interfaz HUD
   document.getElementById('act-label').textContent = slide.actTitle[currentLang];
   document.getElementById('slide-counter').textContent = `Slide ${String(slide.id).padStart(2, '0')} / ${String(SLIDES_DATA.length).padStart(2, '0')}`;
-  document.getElementById('slide-subtitle').textContent = slide.subtitle[currentLang];
-  document.getElementById('slide-narrative').textContent = slide.narrative[currentLang];
+  
+  let sub = slide.subtitle ? slide.subtitle[currentLang] : '';
+  let narr = slide.narrative ? slide.narrative[currentLang] : '';
+  let narrativeBox = document.querySelector('.narrative-container');
+  document.getElementById('slide-subtitle').textContent = sub;
+  document.getElementById('slide-narrative').textContent = narr;
+  if (narrativeBox) {
+    narrativeBox.style.display = ((!sub || sub.trim() === '') && (!narr || narr.trim() === '')) ? 'none' : 'block';
+  }
 
   // 2. Estado del botón de modo Texto / Escultura
   let toggleBtn = document.getElementById('btn-toggle-mode');
@@ -84,7 +91,9 @@ function applyState() {
 
   if (slide.hasPhoto) {
     docLayer.classList.add('active');
-    caption.textContent = slide.photoCaption ? slide.photoCaption[currentLang] : '';
+    let capText = (slide.photoCaption && slide.photoCaption[currentLang]) ? slide.photoCaption[currentLang] : '';
+    caption.textContent = capText;
+    caption.style.display = capText ? 'block' : 'none';
 
     if (slide.photoUrl) {
       photoImg.onload = function() {
