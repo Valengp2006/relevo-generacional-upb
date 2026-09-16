@@ -77,32 +77,7 @@ class TargetSampler {
       pg.text(lines[i], startX, startY + i * lineHeight);
     }
 
-    // Cargar píxeles del canvas oculto
-    pg.loadPixels();
-
-    // Muestreo adaptable para extraer coordenadas con opacidad > 128
-    let sampleStep = max(2, floor(sqrt((width * height) / (desiredCount * 42))));
-    let points = [];
-
-    for (let y = 0; y < height; y += sampleStep) {
-      for (let x = 0; x < width; x += sampleStep) {
-        let index = (x + y * width) * 4;
-        let alpha = pg.pixels[index + 3];
-
-        if (alpha > 128) {
-          points.push({
-            x: x + random(-1.2, 1.2),
-            y: y + random(-1.2, 1.2)
-          });
-        }
-      }
-    }
-
-    // Ordenamiento espacial para interpolación suave y sin cruces
-    points.sort((a, b) => (a.x + a.y * 0.5) - (b.x + b.y * 0.5));
-
-    return points;
-  }
+  return this.extractPoints(pg, desiredCount);
 
   wrapText(pg, text, maxWidth) {
     let words = text.split(' ');
