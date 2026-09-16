@@ -130,3 +130,83 @@ class TargetSampler {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = TargetSampler;
 }
+
+// --- añadir dentro de la clase TargetSampler ---
+
+  /**
+   * Extrae coordenadas {x,y} de los píxeles con opacidad > 128
+   * del canvas oculto actual. Compartido por sampleText y sampleWordSculpture.
+   */
+  extractPoints(pg, desiredCount) {
+    pg.loadPixels();
+    let sampleStep = max(2, floor(sqrt((width * height) / (desiredCount * 42))));
+    let points = [];
+    for (let y = 0; y < height; y += sampleStep) {
+      for (let x = 0; x < width; x += sampleStep) {
+        let index = (x + y * width) * 4;
+        if (pg.pixels[index + 3] > 128) {
+          points.push({ x: x + random(-1.2, 1.2), y: y + random(-1.2, 1.2) });
+        }
+      }
+    }
+    points.sort((a, b) => (a.x + a.y * 0.5) - (b.x + b.y * 0.5));
+    return points;
+  }
+
+  /**
+   * Escultura de palabras: usa SCULPTURES[sculptureType] como máscara de silueta
+   * y la rellena con las palabras del propio guion (estilo Plensa).
+   * @param {string} sculptureType clave de SCULPTURES (ej. "triad_nodes")
+   * @param {string} words texto del slide (título + subtítulo, ya concatenados)
+   * @param {number} desiredCount cantidad objetivo de partículas (~1800)
+   */
+  sampleWordSculpture(sculptureType, words, desiredCount = 1800) {
+    this.ensureGraphics(width, height);
+    let pg = this.offscreen;
+    pg.clear();
+
+    // 1) Máscara: la silueta geométrica existente, como puntos rellenos
+    pg.push();
+    pg.noStroke();
+    pg.fill(255);
+    let maskPts = SCULPTURES[sculptureType](6000, width, height);
+    let dotR = max(3, width * 0.006);
+    for (let p of maskPts) pg.circle(p.x, p.y, dotR);
+    pg.pop();
+
+    // 2) Las palabras solo sobreviven donde ya hay máscara
+    pg.drawingContext.save();
+    pg.drawingContext.globalCompositeOperation = 'source-in';
+
+    pg.push();
+    pg.fill(255);
+    pg.noStroke();
+    pg.textStyle(BOLD);
+    pg.textAlign(LEFT, TOP);
+
+    let wordList = words.split(' ').filter(w => w.length > 0);
+    let fontSize = constrain(width * 0.026, 14, 30);
+    pg.textSize(fontSize);
+
+    let wi = 0;
+    // Baldosado simple en filas, con jitter de posición/rotación por palabra
+    for (let y = -fontSize; y < height + fontSize; y += fontSize * 1.15) {
+      let x = -width * 0.05;
+      while (x < width * 1.05) {
+        let w = wordList[wi % wordList.length];
+        wi++;
+        pg.push();
+        let jx = random(-fontSize * 0.3, fontSize * 0.3);
+        let jy = random(-fontSize * 0.3, fontSize * 0.3);
+        pg.translate(x + jx, y + jy);
+        pg.rotate(random(-0.12, 0.12));
+        pg.text(w, 0, 0);
+        pg.pop();
+        x += pg.textWidth(w) + fontSize * 0.55;
+      }
+    }
+    pg.pop();
+    pg.drawingContext.restore();
+
+    return this.extractPoints(pg, desiredCount);
+  }
