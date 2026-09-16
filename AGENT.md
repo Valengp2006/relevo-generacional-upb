@@ -28,11 +28,11 @@ Diseñar una presentación web generativa e interactiva (HTML/CSS/JS, pantalla c
 | `js/data/slides.js` | ✅ **13/13 slides**, texto real del guion del cliente (ver sección abajo) | pt/en siguen siendo placeholder = mismo texto en español; pendiente traducción real |
 | `js/particles/particle.js` | ✅ Listo | Clase Particle con seek, arrive, Perlin noise, especies generacionales |
 | `js/particles/particle-system.js` | ✅ Listo | Pool continuo, aristas, retracción adaptativa ante fotos |
-| `js/sampler/target-sampler.js` | 🆕 **Patch escrito, pendiente de aplicar** | Se agrega `extractPoints()` (helper compartido) y `sampleWordSculpture(sculptureType, words, count)` — usa las 8 siluetas de `SCULPTURES` como máscara (`globalCompositeOperation:'source-in'`) rellena con las palabras del propio slide en vez de partículas sueltas |
+| `js/sampler/target-sampler.js` | ✅ **Patch aplicado y verificado** | Se agregó `extractPoints()` (helper compartido) y `sampleWordSculpture(sculptureType, words, count)` — usa las 8 siluetas de `SCULPTURES` como máscara (`globalCompositeOperation:'source-in'`) rellena con las palabras del propio slide con jitter |
 | `js/sculptures/sculpture-definitions.js` | ✅ Sin cambios | Los 8 generadores geométricos existentes ahora hacen de **máscara de silueta**, no de posición final — no requirió tocarse |
-| `js/sketch.js` | 🆕 **Patch escrito, pendiente de aplicar** | En `applyState()`, rama `else` (modo escultura): cambia de `sculptureFn(...)` a `sampler.sampleWordSculpture(sType, words, count)` |
+| `js/sketch.js` | ✅ **Patch aplicado y verificado** | En `applyState()`, modo escultura genera la escultura de palabras; HUD oculta contenedores vacíos automáticamente |
 | `assets/logos/forum_upb.svg` | ⚠️ Placeholder | Logosímbolo vectorial provisional. Falta archivo oficial con Belwe real |
-| `assets/images/` | 🆕 **Fotos elegidas, en optimización** | slide-2.jpg (86 KB ✓), slide-5.jpg (135 KB ✓), slide-12.jpeg (115 KB ✓) ya listas. slide-4.jpg (1,8 MB), slide-8.jpg (2,2 MB) y slide-13 (convertida de .tif a .jpg, 4,7 MB) pendientes de redimensionar/comprimir a ≤250 KB / máx. 1920px de ancho |
+| `assets/images/` | ✅ **Fotos reales vinculadas** | slide-2.jpg, slide-4.jpg, slide-5.jpg, slide-8.jpg, slide-12.jpeg y slide-13.jpg vinculadas en `js/data/slides.js` |
 
 ## Cambio de diseño — Escultura de palabras (Plensa)
 
@@ -109,7 +109,7 @@ Principio transversal: **nunca hay reset**. Cada slide define un estado objetivo
 **Tipografía:** Belwe (Medium/Normal) para el logosímbolo institucional cuando se consiga el archivo real — placeholder grotesco (Bevan/Rockwell) mientras tanto. Grotesco libre (Inter) para el resto del sistema.
 
 ## Pendiente / próximos pasos
-- [ ] **Aplicar los patches de esta sesión** en `target-sampler.js` y `sketch.js`, y probar en navegador
+- [x] **Aplicar los patches de esta sesión** en `target-sampler.js` y `sketch.js`, y probar en navegador (resuelto: sintaxis corregida, escultura de palabras activa, fotos reales enlazadas)
 - [ ] **Probar rendimiento y legibilidad** de la escultura de palabras en pantalla grande — si hay pausa al presionar T, bajar de 6.000 a ~2.500 puntos de máscara
 - [ ] **Redimensionar/comprimir** slide-4.jpg, slide-8.jpg y slide-13.jpg a ≤250 KB (herramienta ya entregada)
 - [ ] **Confirmar `sculptureType` de cada slide** contra la escultura de palabras — validar que la silueta sigue siendo legible ahora que está hecha de texto, no de puntos sueltos
