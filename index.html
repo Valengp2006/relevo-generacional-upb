@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Relevo Generacional — Fórum UPB × Future Leaders Forum</title>
+  
+  <!-- Tipografía moderna grotesca de respaldo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Contenedor del Canvas p5.js -->
+  <div id="canvas-container"></div>
+
+  <!-- Capa HUD e Interfaz de Presentación -->
+  <div id="ui-overlay">
+    
+    <!-- Barra Superior -->
+    <header class="top-bar">
+      <!-- Identificación de Marca Fórum UPB -->
+      <div class="brand-lockup">
+        <div class="brand-logo-placeholder interactive">
+          <img src="assets/logos/forum_upb.svg" alt="Fórum UPB" style="height: 28px; width: auto; display: block;">
+        </div>
+      </div>
+
+      <!-- Indicador de Slide y Acto -->
+      <div class="slide-indicator-pill">
+        <span id="act-label" class="act-tag">Ato 1 — Origem</span>
+        <span class="divider" style="color: rgba(255,255,255,0.2);">|</span>
+        <span id="slide-counter" class="slide-counter">Slide 01 / 13</span>
+      </div>
+
+      <!-- Controles Superiores -->
+      <div class="controls-group">
+        <!-- Toggle Manual Texto / Escultura -->
+        <button id="btn-toggle-mode" class="btn btn-toggle interactive" title="Alternar entre Texto e Escultura (Tecla T)">
+          <span id="toggle-icon">✦</span>
+          <span id="toggle-label">Ver Escultura</span>
+          <span style="opacity: 0.6; font-size: 10px; margin-left: 2px;">[T]</span>
+        </button>
+
+        <!-- Selector de Idioma -->
+        <div class="lang-selector interactive">
+          <button class="lang-btn active" data-lang="pt">PT</button>
+          <button class="lang-btn" data-lang="es">ES</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+
+        <!-- Pantalla Completa -->
+        <button id="btn-fullscreen" class="btn interactive" title="Tela Cheia (Tecla F)">
+          <span>⛶</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Capa Documental: Fotografía y Evidencia Institucional (Slides 2, 4, 5, 8, 12, 13) -->
+    <div id="documentary-layer" class="documentary-layer">
+      <div class="photo-card">
+        <div class="photo-img-box">
+          <img id="documentary-photo" src="" alt="Evidencia Documental" style="display: none;">
+          <div id="documentary-placeholder" class="photo-placeholder-content">
+            <div class="photo-placeholder-icon">🏛️</div>
+            <p id="placeholder-text" style="font-size: 12px; line-height: 1.4;">Registro Documental Fórum UPB</p>
+          </div>
+        </div>
+        <p id="photo-caption" class="photo-caption"></p>
+      </div>
+    </div>
+
+    <!-- Barra Inferior: Narrativa y Navegación -->
+    <footer class="bottom-bar">
+      <div class="narrative-container">
+        <h2 id="slide-subtitle" class="slide-subtitle"></h2>
+        <p id="slide-narrative" class="slide-narrative"></p>
+      </div>
+
+      <div>
+        <div class="nav-controls">
+          <button id="btn-prev" class="btn btn-nav interactive" title="Slide Anterior (←)">‹</button>
+          <button id="btn-next" class="btn btn-nav interactive" title="Próximo Slide (→)">›</button>
+        </div>
+        <div class="keyboard-hint">Navegação: [← / →] | Toggle: [T] | Fullscreen: [F]</div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Librería local p5.js (100% offline) -->
+  <script src="lib/p5.min.js"></script>
+
+  <!-- Módulos de la Presentación Generativa -->
+  <script src="js/config.js"></script>
+  <script src="js/data/slides.js"></script>
+  <script src="js/particles/particle.js"></script>
+  <script src="js/particles/particle-system.js"></script>
+  <script src="js/sampler/target-sampler.js"></script>
+  <script src="js/sculptures/sculpture-definitions.js"></script>
+  <script src="js/sketch.js"></script>
+</body>
+</html>
