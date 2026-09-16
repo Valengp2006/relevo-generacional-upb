@@ -24,8 +24,44 @@ Diseñar una presentación web generativa e interactiva (HTML/CSS/JS, pantalla c
 - Referentes: Memo Akten "Forms" (conceptual, no estético) + ForumTEDTALK del profesor (caso real, mismo guion — no imitar)
 
 ## Etapa actual
-**Actividad 02 — Concepto, gramática de transición y paleta definidos. Cambio de diseño confirmado: partículas que forman texto y esculturas (texto-partícula con libertad total, transición manual).**
-Aún no se ha escrito código. Antes de prototipar falta definir la secuencia de esculturas por acto y conseguir materiales (fotos, archivo vectorial del logo del evento).
+**Actividad 02 → PROTOTIPO FUNCIONAL v1 PUBLICADO.**
+
+El código base está escrito, versionado en Git y desplegado en producción:
+
+- 🌐 **GitHub Pages (en vivo):** [https://valengp2006.github.io/relevo-generacional-upb/](https://valengp2006.github.io/relevo-generacional-upb/)
+- 📦 **Repositorio GitHub:** [https://github.com/Valengp2006/relevo-generacional-upb](https://github.com/Valengp2006/relevo-generacional-upb)
+- **Último commit:** `02620f9` — *fix: corregir layout de texto — fontSize windowWidth×0.05, textAlign(CENTER,TOP), margen Y height×0.35 y reset offscreen en resize*
+
+### Estado del código por archivo
+| Archivo | Estado | Descripción |
+|:---|:---|:---|
+| `index.html` | ✅ Listo | Shell fullscreen con HUD flotante, capa documental adaptativa y carga de scripts |
+| `css/style.css` | ✅ Listo | Estilos fullscreen, paleta magenta/rojo/azul del evento, tipografía grotesca Inter |
+| `lib/p5.min.js` | ✅ Listo | Binario local p5.js v1.9.4 (100% offline) |
+| `js/config.js` | ✅ Listo | Tokens de color del swirl, parámetros de simulación (1,800 partículas, seek/arrive) |
+| `js/data/slides.js` | ⚠️ 3/13 slides | 3 slides de prueba implementados (slides 1-3, Acto 1). Faltan slides 4-13. |
+| `js/particles/particle.js` | ✅ Listo | Clase Particle con seek, arrive, Perlin noise, especies generacionales |
+| `js/particles/particle-system.js` | ✅ Listo | Pool continuo, aristas, retracción adaptativa ante fotos |
+| `js/sampler/target-sampler.js` | ✅ Corregido | Canvas offscreen con `textAlign(CENTER, TOP)`, `fontSize = width*0.05`, margen Y `height*0.35`, `reset()` en resize |
+| `js/sculptures/sculpture-definitions.js` | ✅ Listo | Generadores geométricos: monolito, esfera, tríada, clústeres, doble hélice, portal QR |
+| `js/sketch.js` | ✅ Corregido | `windowResized` limpia el offscreen antes de redimensionar; listeners teclado completos |
+| `assets/logos/forum_upb.svg` | ⚠️ Placeholder | Logosímbolo vectorial provisional. Falta archivo oficial con Belwe real. |
+| `assets/images/` | ⚠️ Placeholders SVG | 6 tarjetas placeholder para slides con foto. Faltan fotografías reales del cliente. |
+
+## Bugs corregidos (sesión 2026-09-16)
+- **Texto cortado lateralmente:** `textSize` reducido a `width * 0.05` (acotado 22-46px) con ancho máximo `width * 0.8` y salto de línea automático.
+- **Texto tapando la barra superior:** `textAlign(CENTER, TOP)` con posición Y a `height * 0.35` reserva el espacio de la barra HUD.
+- **Canvas offscreen obsoleto en resize:** `windowResized()` llama a `sampler.reset()` antes de redimensionar, eliminando el `p5.Graphics` con las dimensiones viejas.
+
+## Pendiente / próximos pasos
+- [ ] **Completar los 13 slides** en `js/data/slides.js` (faltan slides 4-13 del Acto 1 completo, Actos 2, 3 y 4)
+- [ ] **Definir y confirmar la secuencia de esculturas** (1 por slide o 1 por acto) que sostenga la narrativa en `js/sculptures/sculpture-definitions.js`
+- [ ] **Probar legibilidad del texto-partícula en proyección grande** (pantalla mínima 1920×1080) — Riesgo #2 aún abierto
+- [ ] **Conseguir el archivo de marca vectorial** (SVG/EPS) del logo Future Leaders Forum para extraer tonos exactos de rosa/rojo/azul
+- [ ] **Recibir carpeta de materiales del cliente** (fotos de Lore) y asignarlas a `assets/images/` según slide
+- [ ] **Conseguir la fuente Belwe** (licencia Adobe Fonts / UPB) o confirmar que se queda el placeholder grotesco
+- [ ] **Integrar el logo institucional real** (Fórum UPB 90 años) en la esquina fija del HUD
+- [ ] **Autoevaluación final** (4 criterios × 25 pts) una vez el sistema esté completo y explicado
 
 ## Análisis de referentes (hecho)
 - **Forms (Akten/Quayola):** el movimiento del cuerpo se abstrae en estructura; lo que importa no es la técnica de tracking sino que la forma revela relaciones ocultas (poder, equilibrio, tensión) entre cuerpo y entorno. Lección para el reto: el sistema debe revelar una relación, no representar un cuerpo.
