@@ -3,6 +3,7 @@
  * Implementa comportamientos de dirección autónoma (Craig Reynolds):
  * - seek(target): Fuerza proporcional hacia el objetivo a máxima velocidad.
  * - arrive(target): Desaceleración progresiva dentro de un radio de frenado.
+ * - Estabilización en modo texto: se ancla con firmeza para garantizar legibilidad tipográfica.
  */
 
 class Particle {
@@ -13,7 +14,7 @@ class Particle {
     this.acc = createVector(0, 0);
     this.target = createVector(x, y);
 
-    this.baseRadius = CONFIG.particles.baseRadius + (index % 3 === 0 ? 1.0 : 0);
+    this.baseRadius = CONFIG.particles.baseRadius + (index % 4 === 0 ? 0.8 : 0);
     this.radius = this.baseRadius;
     this.species = (index % 2 === 0) ? 'A' : 'B';
 
@@ -57,9 +58,6 @@ class Particle {
     this.acc.add(f);
   }
 
-  /**
-   * Comportamiento Seek básico (fuerza directa al objetivo a velocidad crucero)
-   */
   seek(target) {
     let desired = p5.Vector.sub(target, this.pos);
     desired.setMag(CONFIG.particles.maxSpeed);
@@ -68,10 +66,6 @@ class Particle {
     return steer;
   }
 
-  /**
-   * Comportamiento Arrive: acelera hacia el objetivo y desacelera suavemente
-   * al ingresar en el radio de aproximación (arriveRadius = 70px).
-   */
   arrive(target) {
     let desired = p5.Vector.sub(target, this.pos);
     let d = desired.mag();
@@ -93,15 +87,19 @@ class Particle {
     this.applyForce(steer);
   }
 
-  update() {
-    // 1. Aplicar comportamiento Arrive hacia el objetivo asignado
+  update(isTextMode = false) {
+    // 1. Fuerza de arribo suave hacia el target
     this.arrive(this.target);
 
-    // 2. Micro-movimiento Browniano orgánico continuo (Ruido Perlin)
+    // 2. Micro-movimiento Browniano orgánico (Ruido Perlin)
+    // En modo texto, cuando la partícula está en su posición, amortiguamos el ruido para mantener el texto nítido
+    let d = p5.Vector.dist(this.pos, this.target);
+    let idleMult = isTextMode ? (d < 14 ? 0.04 : 0.15) : (d < 10 ? 0.4 : 1.0);
+
     let nX = noise(this.pos.x * CONFIG.particles.idleNoiseScale + this.noiseOffset, frameCount * 0.008);
     let nY = noise(this.pos.y * CONFIG.particles.idleNoiseScale + this.noiseOffset + 100, frameCount * 0.008);
     let idleAngle = map(nX, 0, 1, 0, TWO_PI);
-    let idleForce = p5.Vector.fromAngle(idleAngle).mult(CONFIG.particles.idleForce * map(nY, 0, 1, 0.2, 1.0));
+    let idleForce = p5.Vector.fromAngle(idleAngle).mult(CONFIG.particles.idleForce * idleMult);
     this.applyForce(idleForce);
 
     // 3. Integración de Euler y fricción

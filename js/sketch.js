@@ -132,8 +132,8 @@ function applyState() {
     targets = sampler.sampleWordSculpture(sType, words, CONFIG.particles.count);
   }
 
-  // 5. Asignar los objetivos al pool continuo (con seek y arrive activo)
-  particleSystem.assignTargets(targets, slide.act, slide.hasPhoto, slide.photoPosition);
+  // 5. Asignar los objetivos al pool continuo (con seek y arrive activo y modo adaptativo)
+  particleSystem.assignTargets(targets, slide.act, slide.hasPhoto, slide.photoPosition, currentMode);
 }
 
 /**

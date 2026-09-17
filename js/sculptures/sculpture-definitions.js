@@ -1,273 +1,479 @@
 /**
  * Definiciones de Esculturas Generativas — Relevo Generacional
- * Mapeo geométrico de las formas narrativas en 4 actos (13 slides).
- * Cada generador devuelve un array de puntos coordenados {x, y}.
+ * Esculturas inspiradas en Jaume Plensa, cintas tipográficas 3D y siluetas humanas.
+ * Cada escultura define:
+ * - draw(pg, w, h): Renderiza la silueta sólida de la escultura en el canvas offscreen.
+ * - drawContour(pg, w, h): Delinea aristas estructurales clave para realzar la tridimensionalidad.
  */
 
 const SCULPTURES = {
   /**
-   * ACTO 1: Núcleo denso / Monolito (Slide 1)
-   * Representa el origen unitario, concentración de masa y conocimiento.
+   * SLIDE 1: Figura Sentada de Plensa (Monolito / Origen)
+   * Silueta del pensador sentado abrazando rodillas, formada íntegramente por palabras.
    */
-  monolith_core: function(count, w, h) {
-    let pts = [];
-    let cx = w / 2;
-    let cy = h / 2;
-    let maxR = min(w, h) * 0.22;
+  monolith_core: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
 
-    for (let i = 0; i < count; i++) {
-      let angle = random(TWO_PI);
-      // Distribución densa hacia el centro (raíz cuadrada inversa)
-      let r = pow(random(1), 2.2) * maxR;
-      pts.push({
-        x: cx + cos(angle) * r,
-        y: cy + sin(angle) * r
-      });
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
+
+      // Cabeza
+      pg.ellipse(cx, cy - s * 0.22, s * 0.15, s * 0.18);
+      // Cuello y hombros
+      pg.quad(
+        cx - s * 0.05, cy - s * 0.13,
+        cx + s * 0.05, cy - s * 0.13,
+        cx + s * 0.16, cy - s * 0.06,
+        cx - s * 0.14, cy - s * 0.06
+      );
+      // Torso inclinado
+      pg.beginShape();
+      pg.vertex(cx - s * 0.14, cy - s * 0.06);
+      pg.vertex(cx + s * 0.16, cy - s * 0.06);
+      pg.vertex(cx + s * 0.18, cy + s * 0.12);
+      pg.vertex(cx - s * 0.12, cy + s * 0.14);
+      pg.endShape(CLOSE);
+
+      // Rodillas recogidas hacia el pecho
+      pg.ellipse(cx + s * 0.14, cy + s * 0.08, s * 0.18, s * 0.14);
+      // Piernas plegadas y base sentada
+      pg.ellipse(cx, cy + s * 0.18, s * 0.38, s * 0.14);
+      // Brazos rodeando las rodillas
+      pg.quad(
+        cx - s * 0.08, cy - s * 0.02,
+        cx + s * 0.12, cy + s * 0.02,
+        cx + s * 0.14, cy + s * 0.09,
+        cx - s * 0.06, cy + s * 0.05
+      );
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      pg.ellipse(cx, cy - s * 0.22, s * 0.15, s * 0.18);
+      pg.ellipse(cx, cy + s * 0.18, s * 0.38, s * 0.14);
     }
-    return pts;
   },
 
   /**
-   * ACTO 1: Esfera concentrada (Slide 2)
+   * SLIDE 2: Gran Cúpula / Auditorio Volumétrico
+   * El espacio de encuentro y grados, esfera concentrada con gradas concéntricas.
    */
-  concentrated_sphere: function(count, w, h) {
-    let pts = [];
-    let cx = w / 2;
-    let cy = h / 2;
-    let baseR = min(w, h) * 0.26;
+  concentrated_sphere: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
 
-    for (let i = 0; i < count; i++) {
-      let phi = acos(random(-1, 1));
-      let theta = random(TWO_PI);
-      let r = baseR * (0.8 + random(0.4));
-      // Proyección estereográfica plana
-      let x = cx + r * sin(phi) * cos(theta);
-      let y = cy + r * sin(phi) * sin(theta) * 0.75;
-      pts.push({ x, y });
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
+      // Cúpula esférica superior
+      pg.arc(cx, cy + s * 0.06, s * 0.48, s * 0.48, PI, TWO_PI);
+      // Gradas y base elíptica del auditorio
+      pg.ellipse(cx, cy + s * 0.06, s * 0.48, s * 0.18);
+      pg.ellipse(cx, cy + s * 0.13, s * 0.42, s * 0.14);
+      pg.ellipse(cx, cy + s * 0.19, s * 0.32, s * 0.10);
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      pg.arc(cx, cy + s * 0.06, s * 0.48, s * 0.48, PI, TWO_PI);
+      pg.ellipse(cx, cy + s * 0.19, s * 0.32, s * 0.10);
     }
-    return pts;
   },
 
   /**
-   * ACTO 1: Tríada Estratégica — Academia, Industria, Ciudad (Slides 3 a 5)
-   * Fisión del núcleo en 3 centros de gravedad interconectados.
+   * SLIDE 3: La Tríada Estratégica (Academia, Industria, Ciudad)
+   * Tres figuras humanas que convergen en el centro uniendo sus manos.
    */
-  triad_nodes: function(count, w, h) {
-    let pts = [];
-    let cx = w / 2;
-    let cy = h / 2;
-    let spread = min(w, h) * 0.28;
+  triad_nodes: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      let r = s * 0.22;
 
-    // Tres vértices de la tríada
-    let centers = [
-      { x: cx, y: cy - spread },                     // Academia (norte)
-      { x: cx - spread * 0.95, y: cy + spread * 0.65 }, // Industria (suroeste)
-      { x: cx + spread * 0.95, y: cy + spread * 0.65 }  // Ciudad (sureste)
-    ];
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
 
-    for (let i = 0; i < count; i++) {
-      let targetCenter = centers[i % 3];
-      // 70% de partículas dentro de los 3 polos, 30% en los puentes de tensión
-      if (random(1) < 0.75) {
-        let r = pow(random(1), 1.6) * (spread * 0.38);
-        let angle = random(TWO_PI);
-        pts.push({
-          x: targetCenter.x + cos(angle) * r,
-          y: targetCenter.y + sin(angle) * r
-        });
-      } else {
-        // Enlace entre centros
-        let cA = centers[i % 3];
-        let cB = centers[(i + 1) % 3];
-        let t = random(1);
-        pts.push({
-          x: lerp(cA.x, cB.x, t) + random(-15, 15),
-          y: lerp(cA.y, cB.y, t) + random(-15, 15)
-        });
+      // Centro de convergencia
+      pg.circle(cx, cy, s * 0.12);
+
+      // Tres figuras en 120 grados
+      for (let i = 0; i < 3; i++) {
+        let ang = -HALF_PI + (TWO_PI / 3) * i;
+        let px = cx + cos(ang) * r;
+        let py = cy + sin(ang) * r;
+
+        // Cabeza
+        pg.circle(px, py - s * 0.06, s * 0.09);
+        // Torso
+        pg.ellipse(px, py + s * 0.01, s * 0.11, s * 0.14);
+        // Brazo conectando al centro
+        pg.quad(
+          px - s * 0.03, py,
+          px + s * 0.03, py,
+          cx + s * 0.03, cy,
+          cx - s * 0.03, cy
+        );
+      }
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      let r = s * 0.22;
+      pg.circle(cx, cy, s * 0.12);
+      for (let i = 0; i < 3; i++) {
+        let ang = -HALF_PI + (TWO_PI / 3) * i;
+        pg.circle(cx + cos(ang) * r, cy + sin(ang) * r - s * 0.06, s * 0.09);
       }
     }
-    return pts;
-  },
-
-  triad_tension: function(count, w, h) {
-    return SCULPTURES.triad_nodes(count, w, h);
-  },
-
-  triad_expanded: function(count, w, h) {
-    return SCULPTURES.triad_nodes(count, w, h);
   },
 
   /**
-   * ACTO 2: Clústeres Orgánicos / Micelio (Slides 6 a 8)
-   * Comunidades densas que fortalecen sus lazos y ramificaciones.
+   * SLIDE 4: Fuerzas en Tensión
+   * Dos figuras humanas inclinadas hacia atrás, sostenidas por un puente de tensión central.
    */
-  organic_clusters: function(count, w, h) {
-    let pts = [];
-    let cx = w / 2;
-    let cy = h / 2;
-    let clusterCount = 5;
-    let clusterCenters = [];
+  triad_tension: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
 
-    for (let k = 0; k < clusterCount; k++) {
-      let ang = (TWO_PI / clusterCount) * k;
-      let dist = min(w, h) * random(0.18, 0.32);
-      clusterCenters.push({
-        x: cx + cos(ang) * dist,
-        y: cy + sin(ang) * dist * 0.85
-      });
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
+
+      // Figura izquierda (Pionera)
+      let lx = cx - s * 0.24;
+      pg.circle(lx - s * 0.04, cy - s * 0.14, s * 0.10);
+      pg.quad(
+        lx - s * 0.08, cy - s * 0.08,
+        lx + s * 0.02, cy - s * 0.08,
+        lx + s * 0.04, cy + s * 0.18,
+        lx - s * 0.06, cy + s * 0.18
+      );
+
+      // Figura derecha (Emergente)
+      let rx = cx + s * 0.24;
+      pg.circle(rx + s * 0.04, cy - s * 0.14, s * 0.10);
+      pg.quad(
+        rx - s * 0.02, cy - s * 0.08,
+        rx + s * 0.08, cy - s * 0.08,
+        rx + s * 0.06, cy + s * 0.18,
+        rx - s * 0.04, cy + s * 0.18
+      );
+
+      // Cinta tensora central
+      pg.quad(
+        lx + s * 0.01, cy - s * 0.03,
+        rx - s * 0.01, cy - s * 0.03,
+        rx - s * 0.01, cy + s * 0.05,
+        lx + s * 0.01, cy + s * 0.05
+      );
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      pg.line(cx - s * 0.24, cy, cx + s * 0.24, cy);
     }
-
-    for (let i = 0; i < count; i++) {
-      let c = clusterCenters[i % clusterCount];
-      let r = pow(random(1), 1.5) * (min(w, h) * 0.16);
-      let angle = random(TWO_PI);
-      pts.push({
-        x: c.x + cos(angle) * r,
-        y: c.y + sin(angle) * r
-      });
-    }
-    return pts;
-  },
-
-  thickening_mesh: function(count, w, h) {
-    return SCULPTURES.organic_clusters(count, w, h);
   },
 
   /**
-   * ACTO 2: Puente en Tensión (Slide 9)
-   * Estructura catenaria que une dos horizontes generacionales.
+   * SLIDE 5: El Impacto / Diagnóstico (Tríada Expandida)
+   * Nodos resonantes y anillos concéntricos que irradian energía.
    */
-  bridge_tension: function(count, w, h) {
-    let pts = [];
-    let leftX = w * 0.22;
-    let rightX = w * 0.78;
-    let baseCy = h * 0.52;
+  triad_expanded: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
 
-    for (let i = 0; i < count; i++) {
-      let t = random(1);
-      let x = lerp(leftX, rightX, t);
-      // Arco catenario (curva suave hacia abajo)
-      let catenary = sin(t * PI) * (h * 0.22);
-      let y = baseCy + catenary + random(-18, 18);
-      
-      // Pilares de anclaje
-      if (random(1) < 0.25) {
-        y = lerp(baseCy - (h * 0.15), baseCy + (h * 0.25), random(1));
-        x = (random(1) < 0.5) ? leftX + random(-20, 20) : rightX + random(-20, 20);
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
+      pg.circle(cx, cy, s * 0.16);
+      pg.arc(cx, cy, s * 0.36, s * 0.36, 0, TWO_PI);
+      pg.ellipse(cx, cy, s * 0.52, s * 0.26);
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      pg.circle(cx, cy, s * 0.16);
+      pg.ellipse(cx, cy, s * 0.52, s * 0.26);
+    }
+  },
+
+  /**
+   * SLIDE 6 & 7: Clústeres de Comunidad y Confianza
+   * Rueda de personas entrelazadas formando una red de confianza.
+   */
+  organic_clusters: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      let r = s * 0.20;
+
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
+
+      // Anillo central de comunidad
+      pg.ellipse(cx, cy, s * 0.18, s * 0.18);
+
+      // 5 figuras en círculo tomadas de las manos
+      for (let i = 0; i < 5; i++) {
+        let ang = (TWO_PI / 5) * i;
+        let px = cx + cos(ang) * r;
+        let py = cy + sin(ang) * (r * 0.85);
+
+        pg.circle(px, py - s * 0.05, s * 0.08);
+        pg.ellipse(px, py + s * 0.02, s * 0.10, s * 0.12);
+
+        let nextAng = (TWO_PI / 5) * ((i + 1) % 5);
+        let npx = cx + cos(nextAng) * r;
+        let npy = cy + sin(nextAng) * (r * 0.85);
+
+        pg.quad(
+          px, py,
+          px, py + s * 0.03,
+          npx, npy + s * 0.03,
+          npx, npy
+        );
       }
-
-      pts.push({ x, y });
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      pg.circle(cx, cy, s * 0.18);
     }
-    return pts;
   },
 
   /**
-   * ACTO 3: Doble Hélice Entrelazada (Slide 10)
-   * Las dos especies (Pionera y Emergente) se trenzan en un eje común.
+   * SLIDE 8: Encuentros que Transforman (La Mesa de Co-creación)
+   * Siluetas sentadas alrededor de una mesa compartida.
    */
-  double_helix: function(count, w, h) {
-    let pts = [];
-    let cx = w / 2;
-    let cy = h / 2;
-    let spanX = min(w, h) * 0.7;
-    let ampY = min(w, h) * 0.2;
-    let turns = 3.5;
+  thickening_mesh: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
 
-    for (let i = 0; i < count; i++) {
-      let t = map(i, 0, count, -1, 1);
-      let x = cx + t * (spanX * 0.5);
-      
-      // Dos hebras entrelazadas desfasadas en PI
-      let strand = (i % 2 === 0) ? 0 : PI;
-      let waveAngle = t * turns * TWO_PI + strand;
-      let y = cy + sin(waveAngle) * ampY + random(-6, 6);
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
 
-      // Travesaños de unión entre hebras (peldaños del relevo)
-      if (i % 8 === 0) {
-        let tVal = random(-1, 1);
-        let xMid = cx + tVal * (spanX * 0.5);
-        let y1 = cy + sin(tVal * turns * TWO_PI) * ampY;
-        let y2 = cy + sin(tVal * turns * TWO_PI + PI) * ampY;
-        pts.push({
-          x: xMid,
-          y: lerp(y1, y2, random(1))
-        });
-      } else {
-        pts.push({ x, y });
+      // Mesa elíptica en perspectiva
+      pg.ellipse(cx, cy + s * 0.04, s * 0.44, s * 0.16);
+
+      // 4 figuras sentadas alrededor
+      let offsets = [
+        { x: -s * 0.20, y: -s * 0.04 },
+        { x: -s * 0.07, y: -s * 0.12 },
+        { x: s * 0.07, y: -s * 0.12 },
+        { x: s * 0.20, y: -s * 0.04 }
+      ];
+
+      for (let o of offsets) {
+        pg.circle(cx + o.x, cy + o.y - s * 0.06, s * 0.08);
+        pg.ellipse(cx + o.x, cy + o.y, s * 0.10, s * 0.12);
       }
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      pg.ellipse(cx, cy + s * 0.04, s * 0.44, s * 0.16);
     }
-    return pts;
   },
 
   /**
-   * ACTO 3: Vórtice Entrelazado / Toroide (Slides 11 y 12)
+   * SLIDE 9: El Puente Invisible
+   * Puente colgante en catenaria uniendo dos orillas generacionales.
    */
-  intertwined_vortex: function(count, w, h) {
-    let pts = [];
-    let cx = w / 2;
-    let cy = h / 2;
-    let R = min(w, h) * 0.28; // Radio mayor
-    let r = min(w, h) * 0.12; // Radio menor
+  bridge_tension: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
 
-    for (let i = 0; i < count; i++) {
-      let u = random(TWO_PI);
-      let v = random(TWO_PI);
-      // Fusión de dos toroides concéntricos
-      let x = cx + (R + r * cos(v)) * cos(u);
-      let y = cy + (R + r * cos(v)) * sin(u) * 0.65;
-      pts.push({ x: x + random(-4, 4), y: y + random(-4, 4) });
-    }
-    return pts;
-  },
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
 
-  /**
-   * ACTO 4: Portal Geométrico / Grilla Abierta (Slide 13)
-   * Marco estructurado de convergencia que guía la mirada hacia el QR.
-   */
-  portal_grid: function(count, w, h) {
-    let pts = [];
-    let cx = w / 2;
-    let cy = h / 2;
-    let boxW = min(w, h) * 0.58;
-    let boxH = min(w, h) * 0.58;
+      let lx = cx - s * 0.28;
+      let rx = cx + s * 0.28;
+      let py = cy + s * 0.05;
 
-    let halfW = boxW / 2;
-    let halfH = boxH / 2;
+      // Torre izquierda
+      pg.rect(lx - s * 0.03, cy - s * 0.20, s * 0.06, s * 0.38);
+      // Torre derecha
+      pg.rect(rx - s * 0.03, cy - s * 0.20, s * 0.06, s * 0.38);
+      // Tablero del puente
+      pg.rect(cx - s * 0.38, py - s * 0.02, s * 0.76, s * 0.05);
 
-    for (let i = 0; i < count; i++) {
-      let choice = random(1);
-      let x, y;
-
-      if (choice < 0.65) {
-        // Marco perimetral del portal (4 bordes)
-        let edge = floor(random(4));
-        let t = random(1);
-        if (edge === 0) { // Arriba
-          x = lerp(cx - halfW, cx + halfW, t);
-          y = cy - halfH;
-        } else if (edge === 1) { // Derecha
-          x = cx + halfW;
-          y = lerp(cy - halfH, cy + halfH, t);
-        } else if (edge === 2) { // Abajo
-          x = lerp(cx - halfW, cx + halfW, t);
-          y = cy + halfH;
-        } else { // Izquierda
-          x = cx - halfW;
-          y = lerp(cy - halfH, cy + halfH, t);
-        }
-        x += random(-12, 12);
-        y += random(-12, 12);
-      } else {
-        // Rayos de perspectiva que convergen hacia el centro (efecto túnel/horizonte)
-        let angle = random(TWO_PI);
-        let dist = random(halfW * 0.4, halfW * 1.35);
-        x = cx + cos(angle) * dist;
-        y = cy + sin(angle) * dist;
+      // Cable de suspensión en catenaria
+      pg.beginShape();
+      pg.vertex(lx, cy - s * 0.18);
+      for (let t = 0; t <= 1.0; t += 0.05) {
+        let x = lerp(lx, rx, t);
+        let cat = sin(t * PI) * (s * 0.20);
+        pg.vertex(x, cy - s * 0.18 + cat);
       }
-
-      pts.push({ x, y });
+      pg.vertex(rx, cy - s * 0.18);
+      pg.vertex(rx, py);
+      pg.vertex(lx, py);
+      pg.endShape(CLOSE);
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      pg.line(cx - s * 0.38, cy + s * 0.05, cx + s * 0.38, cy + s * 0.05);
     }
-    return pts;
+  },
+
+  /**
+   * SLIDE 10: Dos Generaciones, Un Flujo (Referencia 4 de la imagen de Valen)
+   * Dos siluetas humanas de pie lado a lado (Mentor y Joven Líder) entrelazando sus manos.
+   */
+  double_helix: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
+
+      // Figura A (Izquierda, generación senior / mentora)
+      let ax = cx - s * 0.12;
+      let ay = cy;
+      pg.circle(ax, ay - s * 0.24, s * 0.11); // Cabeza
+      pg.ellipse(ax, ay - s * 0.08, s * 0.14, s * 0.22); // Torso
+      pg.quad(
+        ax - s * 0.06, ay + s * 0.02,
+        ax + s * 0.06, ay + s * 0.02,
+        ax + s * 0.05, ay + s * 0.24,
+        ax - s * 0.05, ay + s * 0.24
+      ); // Piernas
+
+      // Figura B (Derecha, generación joven emergente)
+      let bx = cx + s * 0.12;
+      let by = cy + s * 0.02;
+      pg.circle(bx, by - s * 0.22, s * 0.10); // Cabeza
+      pg.ellipse(bx, by - s * 0.08, s * 0.13, s * 0.20); // Torso
+      pg.quad(
+        bx - s * 0.05, by + s * 0.01,
+        bx + s * 0.05, by + s * 0.01,
+        bx + s * 0.04, by + s * 0.22,
+        bx - s * 0.04, by + s * 0.22
+      ); // Piernas
+
+      // Conexión central (manos unidas / relevo de energía)
+      pg.quad(
+        ax + s * 0.03, ay - s * 0.06,
+        bx - s * 0.03, by - s * 0.06,
+        bx - s * 0.03, by + s * 0.02,
+        ax + s * 0.03, ay + s * 0.02
+      );
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      pg.circle(cx - s * 0.12, cy - s * 0.24, s * 0.11);
+      pg.circle(cx + s * 0.12, cy + s * 0.02 - s * 0.22, s * 0.10);
+    }
+  },
+
+  /**
+   * SLIDE 11 & 12: Vórtice Entrelazado / Lazo de Infinito
+   * Doble hélice ascendente y símbolo de co-creación permanente.
+   */
+  intertwined_vortex: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
+
+      // Dos lóbulos de infinito entrelazados
+      pg.ellipse(cx - s * 0.15, cy, s * 0.28, s * 0.28);
+      pg.ellipse(cx + s * 0.15, cy, s * 0.28, s * 0.28);
+      // Banda central de unión
+      pg.rect(cx - s * 0.18, cy - s * 0.06, s * 0.36, s * 0.12);
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      pg.ellipse(cx - s * 0.15, cy, s * 0.28, s * 0.28);
+      pg.ellipse(cx + s * 0.15, cy, s * 0.28, s * 0.28);
+    }
+  },
+
+  /**
+   * SLIDE 13: El Portal del Futuro (Apertura al QR)
+   * Portal monumental con columnas y dintel que enmarcan la apertura al futuro.
+   */
+  portal_grid: {
+    draw: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+
+      pg.push();
+      pg.noStroke();
+      pg.fill(255);
+
+      let pw = s * 0.46;
+      let ph = s * 0.52;
+
+      // Columna izquierda
+      pg.rect(cx - pw / 2 - s * 0.06, cy - ph / 2, s * 0.08, ph);
+      // Columna derecha
+      pg.rect(cx + pw / 2 - s * 0.02, cy - ph / 2, s * 0.08, ph);
+      // Dintel superior monumental
+      pg.rect(cx - pw / 2 - s * 0.08, cy - ph / 2 - s * 0.08, pw + s * 0.16, s * 0.09);
+      // Base / umbral
+      pg.rect(cx - pw / 2 - s * 0.10, cy + ph / 2 - s * 0.02, pw + s * 0.20, s * 0.06);
+      pg.pop();
+    },
+    drawContour: function(pg, w, h) {
+      let cx = w / 2;
+      let cy = h / 2;
+      let s = min(w, h);
+      let pw = s * 0.46;
+      let ph = s * 0.52;
+      pg.rect(cx - pw / 2 - s * 0.06, cy - ph / 2, pw + s * 0.12, ph);
+    }
   }
 };
 
