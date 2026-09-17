@@ -1,11 +1,13 @@
 /**
  * Sketch Principal — Relevo Generacional (Fórum UPB × Future Leaders Forum)
- * Sistema generativo interactivo dual:
- * - Modo TEXTO: 1,800 partículas vivas que inician como enjambre orgánico y
- *   se condensan en letras sólidas de alta legibilidad sin vibraciones.
- * - Modo ESCULTURA (Tecla T / Botón): Metamorfosis continua hacia las 13 esculturas
- *   paramétricas, dejando una sombra del texto perfectamente nítida y legible.
- * - Capa institucional superior blindada con logos oficiales.
+ * Sistema generativo interactivo continuo:
+ * - Ciclo 100% de partículas vivas:
+ *   1. Al entrar a un slide, el texto nace como una Nube de partículas viva y orgánica (Fase A).
+ *   2. Gradualmente las partículas se organizan hacia los trazos tipográficos (Fase B).
+ *   3. El texto queda formado y consolidado con respiración sutil continua, sin vibraciones (Fase C/D).
+ *   4. Al pulsar 'T' o el botón HUD: 1,440 partículas componen la escultura generativa y
+ *      360 partículas forman la huella/sombra residual sobre el texto, garantizando legibilidad.
+ * - Cero texto plano 2D ni sombras CSS; 100% partículas vivas en todo el ecosistema.
  * - Navegación fluida por teclado, controles HUD y gestos táctiles.
  */
 
@@ -14,10 +16,7 @@ let sampler;
 let currentSlideIndex = 0;
 let currentMode = CONFIG.modes.TEXT;
 let currentLang = CONFIG.defaultLanguage || 'pt';
-
-// Control de opacidad para la sombra legible de las letras durante la escultura
-let ghostTextAlpha = 0;
-let targetGhostAlpha = 0;
+let slidePhaseTimer = 0.0;
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight);
@@ -25,64 +24,46 @@ function setup() {
   frameRate(CONFIG.canvas.targetFPS || 60);
   pixelDensity(CONFIG.canvas.pixelDensity || 1);
 
-  // Inicializar pool continuo de 1,800 partículas y muestreador tipográfico
+  // Inicializar el pool continuo de 1,800 partículas y el muestreador tipográfico
   particleSystem = new ParticleSystem(CONFIG.particles.count || 1800);
   sampler = new TargetSampler();
 
-  // Inicializar listeners de teclado y controles HUD
+  // Inicializar listeners de teclado, HUD y gestos
   initKeyboardAndUIListeners();
 
-  // Iniciar en modo texto con enjambre vivo
-  particleSystem.burstSwarm();
+  // Iniciar la experiencia en el primer slide
   applyState(true);
 }
 
 function draw() {
   background(CONFIG.colors.bg);
 
-  // 1. Sombra legible de las letras que emerge y permanece mientras la escultura vive
-  ghostTextAlpha = lerp(ghostTextAlpha, targetGhostAlpha, 0.08);
-  drawGhostText();
+  // Evolución temporal de fases en modo TEXTO:
+  // Fase A (Nube viva): 0.0s a 1.8s
+  // Fase B (Organización): 1.8s a 3.5s
+  // Fase C/D (Texto consolidado respirando): 3.5s en adelante
+  if (currentMode === CONFIG.modes.TEXT) {
+    let dt = deltaTime / 1000.0;
+    slidePhaseTimer += dt;
 
-  // 2. Actualizar partículas y conexiones
+    if (slidePhaseTimer < 1.8) {
+      if (particleSystem.currentPhase !== 'TEXT_CLOUD') {
+        particleSystem.setPhase('TEXT_CLOUD');
+      }
+    } else if (slidePhaseTimer < 3.5) {
+      if (particleSystem.currentPhase !== 'TEXT_ORGANIZING') {
+        particleSystem.setPhase('TEXT_ORGANIZING');
+      }
+    } else {
+      if (particleSystem.currentPhase !== 'TEXT_FORMED') {
+        particleSystem.setPhase('TEXT_FORMED');
+      }
+    }
+  }
+
+  // Actualizar e ilustrar el ecosistema continuo de partículas y conexiones
   particleSystem.update();
   particleSystem.display();
-}
-
-/**
- * Renderiza la sombra tipográfica legible de las letras en el fondo
- * cuando la escultura está activa, garantizando que el titular siga siendo
- * 100% legible con alto contraste mientras la escultura anima al frente.
- */
-function drawGhostText() {
-  if (ghostTextAlpha <= 1 || !sampler || !sampler.lastTextLayout) return;
-  let layout = sampler.lastTextLayout;
-
-  push();
-  textSize(layout.fontSize);
-  textStyle(BOLD);
-  textFont('Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
-
-  drawingContext.save();
-  // Sombra profunda de contraste para aislar el texto de las partículas de la escultura
-  drawingContext.shadowColor = 'rgba(0, 0, 0, 0.95)';
-  drawingContext.shadowBlur = 24;
-  drawingContext.shadowOffsetX = 0;
-  drawingContext.shadowOffsetY = 4;
-
-  // Trazo oscuro suave de protección para recortar las letras sobre la escena
-  stroke(8, 11, 16, ghostTextAlpha * 0.85);
-  strokeWeight(max(2.6, layout.fontSize * 0.055));
-
-  // Relleno tipográfico nítido y luminoso
-  fill(248, 250, 252, ghostTextAlpha);
-
-  let spacing = layout.letterSpacing || 4.2;
-  for (let i = 0; i < layout.lines.length; i++) {
-    sampler.drawSpacedLine(window, layout.lines[i], width / 2, layout.startY + i * layout.lineHeight, spacing);
-  }
-  drawingContext.restore();
-  pop();
 }
 
 function windowResized() {
@@ -94,8 +75,8 @@ function windowResized() {
 }
 
 /**
- * Aplica el estado del slide activo, actualizando los elementos DOM,
- * fotografía documental, objetivos de partículas y layout de la sombra de texto.
+ * Aplica el estado del slide activo, sincronizando los textos DOM,
+ * fotografía documental y objetivos del sistema de partículas.
  */
 function applyState(isSlideChange = false) {
   let slide = SLIDES_DATA[currentSlideIndex];
@@ -110,10 +91,7 @@ function applyState(isSlideChange = false) {
     counterEl.textContent = `Slide ${String(slide.id).padStart(2, '0')} / ${String(SLIDES_DATA.length).padStart(2, '0')}`;
   }
 
-  // 2. Actualizar estado visual del botón Toggle en HUD
-  updateToggleButtonUI();
-
-  // 3. Subtítulo y texto narrativo inferior
+  // 2. Subtítulo y texto narrativo inferior
   let sub = slide.subtitle ? (slide.subtitle[currentLang] || '') : '';
   let narr = slide.narrative ? (slide.narrative[currentLang] || '') : '';
   let narrativeBox = document.querySelector('.narrative-container');
@@ -126,7 +104,7 @@ function applyState(isSlideChange = false) {
     narrativeBox.style.display = ((!sub || sub.trim() === '') && (!narr || narr.trim() === '')) ? 'none' : 'block';
   }
 
-  // 4. Capa Documental: presencia de fotografía institucional (hasPhoto)
+  // 3. Capa Documental: fotografía institucional (hasPhoto)
   let docLayer = document.getElementById('documentary-layer');
   let photoImg = document.getElementById('documentary-photo');
   let placeholder = document.getElementById('documentary-placeholder');
@@ -160,48 +138,64 @@ function applyState(isSlideChange = false) {
     }
   }
 
-  // 5. Muestreo de objetivos para las partículas
+  // 4. Muestreo de objetivos para las partículas (Texto, Nube y Escultura)
   let headline = slide.title[currentLang] || slide.title['pt'];
-  // Se calcula siempre el layout tipográfico para asegurar la sombra en modo escultura
   let textTargets = sampler.sampleText(headline, CONFIG.particles.count);
+  let cloudTargets = sampler.sampleCloud(sampler.lastTextLayout, CONFIG.particles.count);
 
-  let targets = [];
   let sType = slide.sculptureType || 'nucleo';
-
-  if (currentMode === CONFIG.modes.TEXT) {
-    targets = textTargets;
-    targetGhostAlpha = 0; // En modo texto las partículas son las letras
-  } else {
-    // Modo Escultura
-    let generator = SCULPTURES[sType] || SCULPTURES['nucleo'];
-    let opts = {};
-    if (slide.edgeProgress !== undefined) {
-      opts.edgeProgress = slide.edgeProgress;
-    }
-    targets = generator(CONFIG.particles.count, width, height, opts);
-    targetGhostAlpha = 210; // En modo escultura la sombra de las letras permanece nítida y legible
+  let generator = SCULPTURES[sType] || SCULPTURES['nucleo'];
+  let opts = {};
+  if (slide.edgeProgress !== undefined) {
+    opts.edgeProgress = slide.edgeProgress;
   }
+  let sculptureTargets = generator(CONFIG.particles.count, width, height, opts);
 
-  // 6. Actualizar Zona de Calma desde el layout del texto para cuando la escultura está activa
+  // 5. Límites de la huella del texto para la Zona de Calma en escultura
+  let textBounds = null;
   if (sampler && sampler.lastTextLayout) {
     let layout = sampler.lastTextLayout;
     let textW = layout.maxWidth || (width * 0.82);
-    particleSystem.setTextBounds({
+    textBounds = {
       left: width / 2 - textW / 2,
       right: width / 2 + textW / 2,
       top: layout.startY - 15,
       bottom: layout.startY + layout.totalHeight + 15,
       width: textW,
       height: layout.totalHeight + 30
-    });
+    };
   }
 
-  // 7. Asignar los objetivos al pool continuo sin resets
-  particleSystem.assignTargets(targets, slide.act, slide.hasPhoto, currentMode, sType);
+  let targetsData = {
+    textTargets: textTargets,
+    cloudTargets: cloudTargets,
+    sculptureTargets: sculptureTargets,
+    act: slide.act,
+    hasPhoto: slide.hasPhoto,
+    sculptureType: sType,
+    textBounds: textBounds
+  };
+
+  // 6. Aplicar la secuencia al pool continuo sin crear/destruir objetos
+  if (isSlideChange) {
+    currentMode = CONFIG.modes.TEXT;
+    slidePhaseTimer = 0.0;
+    particleSystem.startSlideSequence(targetsData);
+  } else {
+    particleSystem.setTargets(targetsData);
+    if (currentMode === CONFIG.modes.TEXT) {
+      slidePhaseTimer = 1.4; // Reorganización suave al cambiar idioma
+      particleSystem.setPhase('TEXT_ORGANIZING');
+    } else {
+      particleSystem.setPhase('SCULPTURE_ACTIVE');
+    }
+  }
+
+  updateToggleButtonUI();
 }
 
 /**
- * Actualiza el texto, icono y clase activa del botón Toggle en el HUD
+ * Actualiza el texto, icono y estilo del botón Toggle en el HUD
  */
 function updateToggleButtonUI() {
   let toggleBtn = document.getElementById('btn-toggle-mode');
@@ -222,11 +216,20 @@ function updateToggleButtonUI() {
 }
 
 /**
- * Alterna manualmente entre modo Texto y modo Escultura
+ * Alterna bidireccionalmente entre modo Texto y modo Escultura
  */
 function toggleMode() {
-  currentMode = (currentMode === CONFIG.modes.TEXT) ? CONFIG.modes.SCULPTURE : CONFIG.modes.TEXT;
-  applyState(false);
+  if (currentMode === CONFIG.modes.TEXT) {
+    currentMode = CONFIG.modes.SCULPTURE;
+    particleSystem.currentMode = 'sculpture';
+    particleSystem.setPhase('SCULPTURE_ACTIVE');
+  } else {
+    currentMode = CONFIG.modes.TEXT;
+    particleSystem.currentMode = 'text';
+    slidePhaseTimer = 4.0; // Pasa inmediatamente al texto consolidado
+    particleSystem.setPhase('TEXT_FORMED');
+  }
+  updateToggleButtonUI();
 }
 
 /**
@@ -235,9 +238,6 @@ function toggleMode() {
 function nextSlide() {
   if (currentSlideIndex < SLIDES_DATA.length - 1) {
     currentSlideIndex++;
-    // Cada slide nuevo arranca en modo texto con enjambre vivo que se condensa en letras
-    currentMode = CONFIG.modes.TEXT;
-    particleSystem.burstSwarm();
     applyState(true);
   }
 }
@@ -245,8 +245,6 @@ function nextSlide() {
 function prevSlide() {
   if (currentSlideIndex > 0) {
     currentSlideIndex--;
-    currentMode = CONFIG.modes.TEXT;
-    particleSystem.burstSwarm();
     applyState(true);
   }
 }
@@ -318,7 +316,7 @@ function initKeyboardAndUIListeners() {
     });
   });
 
-  // Soporte gestual táctil para dispositivos móviles y pantallas interactivas
+  // Soporte gestual táctil
   let touchStartX = 0;
   window.addEventListener('touchstart', (e) => {
     touchStartX = e.changedTouches[0].screenX;

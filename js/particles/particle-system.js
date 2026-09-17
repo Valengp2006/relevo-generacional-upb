@@ -1,22 +1,30 @@
 /**
  * Clase ParticleSystem — Gestor del pool continuo de 1,800 partículas.
- * Soporta dos modos continuos bidireccionales:
- * - Modo TEXTO: Formación de letras con ciclo de enjambre vivo (burstSwarm) y máxima legibilidad sin vibración.
- * - Modo ESCULTURA: Metamorfosis hacia las 13 esculturas generativas continuas con zona de calma.
+ * Arquitectura de Ecosistema Continuo:
+ * - El titular nace como una nube de partículas orgánica (Fase A).
+ * - Las partículas se organizan paulatinamente hacia los glifos de las letras (Fase B).
+ * - Las letras se consolidan con máxima nitidez y respiración viva continua (Fase C/D).
+ * - En modo Escultura (Tecla T): 1,440 partículas forman la escultura generativa y
+ *   360 partículas forman la huella/sombra residual del texto, manteniendo legibilidad.
+ * - Cero texto canvas 2D plano ni sombras CSS; 100% partículas vivas en todo el ciclo.
  */
 
 class ParticleSystem {
   constructor(count) {
-    this.count = count || CONFIG.particles.count;
+    this.count = count || (typeof CONFIG !== 'undefined' && CONFIG.particles ? CONFIG.particles.count : 1800);
     this.particles = [];
+    this.currentPhase = 'TEXT_CLOUD'; // 'TEXT_CLOUD' | 'TEXT_ORGANIZING' | 'TEXT_FORMED' | 'SCULPTURE_ACTIVE'
+    this.currentMode = 'text';        // 'text' | 'sculpture'
     this.currentAct = 1;
     this.isRetracted = false;
-    this.currentMode = 'text';
-    this.swarmIntensity = 0.0;
-    this.textBounds = null;
     this.currentSculptureType = 'nucleo';
+    this.textBounds = null;
 
-    // Inicializar pool continuo
+    this.cachedTextTargets = [];
+    this.cachedCloudTargets = [];
+    this.cachedSculptureTargets = [];
+
+    // Inicializar pool continuo de 1,800 partículas
     for (let i = 0; i < this.count; i++) {
       let initX = width / 2 + random(-width * 0.25, width * 0.25);
       let initY = height / 2 + random(-height * 0.25, height * 0.25);
@@ -25,207 +33,315 @@ class ParticleSystem {
   }
 
   /**
-   * Dispara el estado de 'sistema vivo': las partículas se dispersan con ímpetu
-   * orgánico antes de condensarse progresivamente en las letras del slide.
-   */
-  burstSwarm() {
-    this.swarmIntensity = 1.0;
-    for (let i = 0; i < this.particles.length; i++) {
-      let kick = p5.Vector.random2D().mult(random(4.5, 9.5));
-      this.particles[i].vel.add(kick);
-    }
-  }
-
-  /**
-   * Actualiza los límites del titular activo para la Zona de Calma
+   * Actualiza los límites del titular activo para la Zona de Calma en escultura
    */
   setTextBounds(bounds) {
     this.textBounds = bounds;
   }
 
   /**
-   * Asigna los nuevos objetivos calculados preservando la física y el movimiento continuos
+   * Almacena y sincroniza los conjuntos de objetivos calculados para el slide actual
    */
-  assignTargets(targetPoints, actNumber, hasPhoto, currentMode = 'text', sculptureType = 'nucleo') {
-    this.currentAct = actNumber || 1;
-    this.isRetracted = hasPhoto || false;
-    this.currentMode = currentMode || 'text';
-    this.currentSculptureType = sculptureType || 'nucleo';
+  setTargets(data) {
+    if (data.textTargets) this.cachedTextTargets = data.textTargets;
+    if (data.cloudTargets) this.cachedCloudTargets = data.cloudTargets;
+    if (data.sculptureTargets) this.cachedSculptureTargets = data.sculptureTargets;
+    if (data.act !== undefined) this.currentAct = data.act;
+    if (data.hasPhoto !== undefined) this.isRetracted = data.hasPhoto;
+    if (data.sculptureType) this.currentSculptureType = data.sculptureType;
+    if (data.textBounds) this.textBounds = data.textBounds;
+  }
 
-    let totalTargets = targetPoints.length;
-    if (totalTargets === 0) return;
+  /**
+   * Inicia el ciclo narrativo completo en un nuevo slide:
+   * Arranca como nube viva respirando con dinamismo orgánico.
+   */
+  startSlideSequence(data) {
+    this.setTargets(data);
+    this.currentMode = 'text';
+    this.setPhase('TEXT_CLOUD');
 
-    let isText = (this.currentMode === 'text');
-
-    // Configuración espacial y de opacidad según el modo
-    let offsetX = 0;
-    let offsetY = 0;
-    let scaleFactor = 1.0;
-    let targetAlpha = 245;
-
-    if (!isText && this.isRetracted) {
-      targetAlpha = 215;
-      scaleFactor = 0.78;
-      offsetX = -width * 0.16; // Cede espacio hacia la izquierda para que la foto destaque
-    }
-
+    // Suave impulso cinemático orgánico para reactivar la nube viva
     for (let i = 0; i < this.particles.length; i++) {
-      let p = this.particles[i];
-      let target = targetPoints[i % totalTargets];
+      let kick = p5.Vector.random2D().mult(random(1.2, 2.8));
+      this.particles[i].vel.add(kick);
+    }
+  }
 
-      let finalX, finalY;
-      if (isText) {
-        finalX = target.x;
-        finalY = target.y;
-      } else {
-        finalX = (target.x - width / 2) * scaleFactor + width / 2 + offsetX;
-        finalY = (target.y - height / 2) * scaleFactor + height / 2 + offsetY;
+  /**
+   * Modula la fase activa del sistema de partículas
+   * @param {string} phaseName 'TEXT_CLOUD' | 'TEXT_ORGANIZING' | 'TEXT_FORMED' | 'SCULPTURE_ACTIVE'
+   */
+  setPhase(phaseName) {
+    this.currentPhase = phaseName;
+    let isCloud = (phaseName === 'TEXT_CLOUD');
+    let isOrganizing = (phaseName === 'TEXT_ORGANIZING');
+    let isTextFormed = (phaseName === 'TEXT_FORMED');
+    let isSculpture = (phaseName === 'SCULPTURE_ACTIVE');
+
+    if (isCloud) {
+      if (!this.cachedCloudTargets || this.cachedCloudTargets.length === 0) return;
+      let totalCloud = this.cachedCloudTargets.length;
+      for (let i = 0; i < this.particles.length; i++) {
+        let p = this.particles[i];
+        p.setIsHuella(false);
+        p.setBreathAmp(32.0);
+        let ct = this.cachedCloudTargets[i % totalCloud];
+        p.setTarget(ct.x, ct.y);
+        p.setTargetAlpha(225);
+        p.setTargetScale(1.0);
+        this.applyTextColors(p, i);
       }
+    } else if (isOrganizing) {
+      if (!this.cachedTextTargets || this.cachedTextTargets.length === 0) return;
+      let totalText = this.cachedTextTargets.length;
+      for (let i = 0; i < this.particles.length; i++) {
+        let p = this.particles[i];
+        p.setIsHuella(false);
+        p.setBreathAmp(12.0);
+        let tt = this.cachedTextTargets[i % totalText];
+        p.setTarget(tt.x, tt.y);
+        p.setTargetAlpha(240);
+        p.setTargetScale(1.0);
+        this.applyTextColors(p, i);
+      }
+    } else if (isTextFormed) {
+      if (!this.cachedTextTargets || this.cachedTextTargets.length === 0) return;
+      let totalText = this.cachedTextTargets.length;
+      for (let i = 0; i < this.particles.length; i++) {
+        let p = this.particles[i];
+        p.setIsHuella(false);
+        p.setBreathAmp(1.8);
+        let tt = this.cachedTextTargets[i % totalText];
+        p.setTarget(tt.x, tt.y);
+        p.setTargetAlpha(245);
+        p.setTargetScale(1.0);
+        this.applyTextColors(p, i);
+      }
+    } else if (isSculpture) {
+      this.applySculptureAndHuella();
+    }
+  }
 
-      p.setTarget(finalX, finalY);
-      p.setTargetAlpha(targetAlpha);
-      p.setTargetScale(scaleFactor);
-
-      if (isText) {
-        // En MODO TEXTO: Asignación de colores de alto contraste sobre fondo oscuro
-        p.setSpecies(i % 2 === 0 ? 'A' : 'B', 0);
-        if (this.currentAct <= 2) {
-          if (i % 6 === 0) {
-            p.setTargetRGB(0, 180, 216);  // Acentos en azul eléctrico
-          } else {
-            p.setTargetRGB(224, 33, 138); // Magenta de marca principal
-          }
-        } else if (this.currentAct === 3) {
-          if (i % 2 === 0) {
-            p.setTargetRGB(224, 33, 138); // Especie A (Experiencia)
-          } else {
-            p.setTargetRGB(0, 180, 216);  // Especie B (Juventud)
-          }
-        } else {
-          if (i % 5 === 0) {
-            p.setTargetRGB(255, 184, 28); // Oro institucional
-          } else {
-            p.setTargetRGB(0, 180, 216);
-          }
-        }
+  /**
+   * Aplica la paleta tipográfica según el acto activo
+   */
+  applyTextColors(p, i) {
+    p.setSpecies(i % 2 === 0 ? 'A' : 'B', 0);
+    if (this.currentAct <= 2) {
+      if (i % 6 === 0) {
+        p.setTargetRGB(0, 180, 216);  // Acentos en azul eléctrico
       } else {
-        // En MODO ESCULTURA: Asignación cromática continua de los 4 Actos
-        let sp = target.species;
-        let cid = target.clusterId;
-        p.setSpecies(sp || 'A', cid || 0);
-
-        if (this.currentAct <= 2) {
-          if (sculptureType === 'nucleo') {
-            let rVar = (i % 7 === 0) ? 238 : 224;
-            let gVar = (i % 7 === 0) ? 45 : 33;
-            let bVar = (i % 7 === 0) ? 148 : 138;
-            p.setTargetRGB(rVar, gVar, bVar);
-          } else if (sculptureType === 'auditorio') {
-            if (i % 5 === 0) {
-              p.setTargetRGB(0, 180, 216);
-            } else {
-              p.setTargetRGB(224, 33, 138);
-            }
-          } else if (sculptureType === 'triada' || sculptureType === 'irradiar') {
-            if (cid === 1) {
-              p.setTargetRGB(224, 33, 138); // Academia
-            } else if (cid === 2) {
-              p.setTargetRGB(0, 180, 216);  // Industria
-            } else if (cid === 3) {
-              p.setTargetRGB(42, 157, 143); // Ciudad
-            } else {
-              p.setTargetRGB(255, 184, 28);
-            }
-          } else if (sculptureType === 'comunidad' || sculptureType === 'comunidad_tejida') {
-            if (cid === 1) {
-              p.setTargetRGB(224, 33, 138);
-            } else if (cid === 2) {
-              p.setTargetRGB(0, 180, 216);
-            } else if (cid === 3) {
-              p.setTargetRGB(42, 157, 143);
-            } else {
-              p.setTargetRGB(255, 184, 28);
-            }
-          } else if (sculptureType === 'vision') {
-            if (cid === 1) {
-              p.setTargetRGB(224, 33, 138);
-            } else if (cid === 2 || cid === 3) {
-              p.setTargetRGB(0, 180, 216);
-            } else {
-              p.setTargetRGB(255, 184, 28);
-            }
-          }
-        } else if (this.currentAct === 3) {
-          // Slide 10 en adelante: transición cromática suave de 2s hacia 2 especies
-          if (sp === 'A') {
-            p.setTargetRGB(224, 33, 138);
-          } else if (sp === 'B') {
-            p.setTargetRGB(0, 180, 216);
-          } else {
-            p.setTargetRGB(255, 184, 28);
-          }
-        } else {
-          if (sp === 'A') {
-            p.setTargetRGB(224, 33, 138);
-          } else if (sp === 'B') {
-            p.setTargetRGB(0, 180, 216);
-          } else {
-            p.setTargetRGB(255, 184, 28);
-          }
-        }
+        p.setTargetRGB(224, 33, 138); // Magenta de marca principal
+      }
+    } else if (this.currentAct === 3) {
+      if (i % 2 === 0) {
+        p.setTargetRGB(224, 33, 138); // Especie A (Experiencia)
+      } else {
+        p.setTargetRGB(0, 180, 216);  // Especie B (Juventud)
+      }
+    } else {
+      if (i % 5 === 0) {
+        p.setTargetRGB(255, 184, 28); // Oro institucional
+      } else {
+        p.setTargetRGB(0, 180, 216);  // Azul eléctrico
       }
     }
   }
 
-  update() {
-    let isText = (this.currentMode === 'text');
+  /**
+   * Distribución dual en Modo Escultura:
+   * - 1,440 partículas viajan a componer la escultura generativa
+   * - 360 partículas permanecen delineando la huella/sombra residual del texto
+   */
+  applySculptureAndHuella() {
+    if (!this.cachedSculptureTargets || this.cachedSculptureTargets.length === 0) return;
+    let totalSculpture = this.cachedSculptureTargets.length;
+    let totalText = (this.cachedTextTargets && this.cachedTextTargets.length > 0) ? this.cachedTextTargets.length : 1;
 
-    // Decaimiento del enjambre vivo (~1.4 segundos a 60fps)
-    if (this.swarmIntensity > 0) {
-      this.swarmIntensity = max(0, this.swarmIntensity - 0.012);
+    let sculptureCount = 1440;
+    let huellaCount = this.particles.length - sculptureCount; // 360
+
+    // 1. Partículas de la Escultura Generativa (0 a 1439)
+    let offsetX = 0;
+    let offsetY = 0;
+    let scaleFactor = 1.0;
+    let sculptureAlpha = 245;
+
+    if (this.isRetracted) {
+      sculptureAlpha = 215;
+      scaleFactor = 0.78;
+      offsetX = -width * 0.16; // Retracción ante fotografía documental
     }
 
+    for (let i = 0; i < sculptureCount; i++) {
+      let p = this.particles[i];
+      // Muestreo uniforme a lo largo de todos los clusters de la escultura
+      let scIdx = Math.floor(i * (totalSculpture / sculptureCount));
+      let target = this.cachedSculptureTargets[scIdx % totalSculpture];
+
+      let finalX = (target.x - width / 2) * scaleFactor + width / 2 + offsetX;
+      let finalY = (target.y - height / 2) * scaleFactor + height / 2 + offsetY;
+
+      p.setIsHuella(false);
+      p.setTarget(finalX, finalY);
+      p.setTargetAlpha(sculptureAlpha);
+      p.setTargetScale(scaleFactor);
+      p.setBreathAmp(2.5);
+
+      let sp = target.species || 'A';
+      let cid = target.clusterId || 0;
+      p.setSpecies(sp, cid);
+
+      // Asignación cromática continua de los 4 Actos
+      if (this.currentAct <= 2) {
+        if (this.currentSculptureType === 'nucleo') {
+          let rVar = (i % 7 === 0) ? 238 : 224;
+          let gVar = (i % 7 === 0) ? 45 : 33;
+          let bVar = (i % 7 === 0) ? 148 : 138;
+          p.setTargetRGB(rVar, gVar, bVar);
+        } else if (this.currentSculptureType === 'auditorio') {
+          if (i % 5 === 0) {
+            p.setTargetRGB(0, 180, 216);
+          } else {
+            p.setTargetRGB(224, 33, 138);
+          }
+        } else if (this.currentSculptureType === 'triada' || this.currentSculptureType === 'irradiar' ||
+                   this.currentSculptureType === 'comunidad' || this.currentSculptureType === 'comunidad_tejida') {
+          if (cid === 1) {
+            p.setTargetRGB(224, 33, 138); // Academia
+          } else if (cid === 2) {
+            p.setTargetRGB(0, 180, 216);  // Industria
+          } else if (cid === 3) {
+            p.setTargetRGB(42, 157, 143); // Ciudad
+          } else {
+            p.setTargetRGB(255, 184, 28); // Articulación
+          }
+        } else if (this.currentSculptureType === 'vision') {
+          if (cid === 1) {
+            p.setTargetRGB(224, 33, 138);
+          } else if (cid === 2 || cid === 3) {
+            p.setTargetRGB(0, 180, 216);
+          } else {
+            p.setTargetRGB(255, 184, 28);
+          }
+        } else {
+          p.setTargetRGB(224, 33, 138);
+        }
+      } else if (this.currentAct === 3) {
+        // Transición cromática suave hacia 2 especies
+        if (sp === 'A') {
+          p.setTargetRGB(224, 33, 138);
+        } else if (sp === 'B') {
+          p.setTargetRGB(0, 180, 216);
+        } else {
+          p.setTargetRGB(255, 184, 28);
+        }
+      } else {
+        // Acto 4
+        if (sp === 'A') {
+          p.setTargetRGB(224, 33, 138);
+        } else if (sp === 'B') {
+          p.setTargetRGB(0, 180, 216);
+        } else {
+          p.setTargetRGB(255, 184, 28);
+        }
+      }
+    }
+
+    // 2. Partículas asignadas a la HUELLA residual del texto (1440 a 1799)
+    // Distribución uniforme a lo largo del muestreo de glifos tipográficos
+    for (let j = 0; j < huellaCount; j++) {
+      let pIdx = sculptureCount + j;
+      let p = this.particles[pIdx];
+
+      let textIdx = Math.floor(j * (totalText / huellaCount));
+      let tTarget = this.cachedTextTargets[textIdx % totalText];
+
+      p.setIsHuella(true);
+      p.setTarget(tTarget.x, tTarget.y);
+      p.setTargetAlpha(78);           // Opacidad suave, etérea y legible
+      p.setTargetScale(0.82);         // Escala sutil para un punteado nítido
+      p.setBreathAmp(2.0);            // Respiración etérea suave
+      p.setTargetRGB(215, 230, 250);  // Platino luminoso / blanco celestial
+      p.setSpecies('HUELLA', 0);
+    }
+  }
+
+  /**
+   * Método de compatibilidad retroactiva
+   */
+  assignTargets(targetPoints, actNumber, hasPhoto, currentMode = 'text', sculptureType = 'nucleo') {
+    this.currentAct = actNumber || 1;
+    this.isRetracted = hasPhoto || false;
+    this.currentSculptureType = sculptureType || 'nucleo';
+    this.currentMode = currentMode || 'text';
+    if (this.currentMode === 'text') {
+      this.cachedTextTargets = targetPoints;
+      this.setPhase('TEXT_FORMED');
+    } else {
+      this.cachedSculptureTargets = targetPoints;
+      this.setPhase('SCULPTURE_ACTIVE');
+    }
+  }
+
+  /**
+   * Dispersión de enjambre vivo (compatibilidad retroactiva)
+   */
+  burstSwarm() {
     for (let i = 0; i < this.particles.length; i++) {
-      this.particles[i].update(isText, this.swarmIntensity, this.textBounds);
+      let kick = p5.Vector.random2D().mult(random(1.5, 3.5));
+      this.particles[i].vel.add(kick);
+    }
+  }
+
+  update() {
+    for (let i = 0; i < this.particles.length; i++) {
+      this.particles[i].update(this.currentPhase, this.textBounds);
     }
   }
 
   display() {
     this.drawConnections();
-
-    let isText = (this.currentMode === 'text');
     for (let i = 0; i < this.particles.length; i++) {
-      this.particles[i].display(isText, this.swarmIntensity);
+      this.particles[i].display(this.currentPhase);
     }
   }
 
   /**
-   * Conexiones de red estructural continuas:
-   * - En modo TEXTO consolidado: conexión microscópica (máx 7.5px) estrictamente local
-   *   para evitar telarañas entre letras y preservar la legibilidad y los huecos de glifos.
-   * - Durante enjambre vivo: red orgánica expansiva que se contrae hacia el texto.
+   * Conexiones de red continuas:
+   * - En modo TEXTO consolidado: conexión ultra-local (máx 7.0px) para no crear telarañas
+   *   entre caracteres y mantener los huecos tipográficos perfectos.
+   * - En Fase NUBE: red expansiva orgánica.
+   * - En Fase ORGANIZACIÓN: red que converge hacia las letras.
    * - En modo ESCULTURA: red espacial amplia (40-48px) de acero y palabras estilo Plensa,
-   *   con atenuación sobre el área de la sombra del texto.
+   *   excluyendo las partículas de la huella del texto para no atarlas con hilos.
    */
   drawConnections() {
-    let isText = (this.currentMode === 'text');
+    let isCloud = (this.currentPhase === 'TEXT_CLOUD');
+    let isOrganizing = (this.currentPhase === 'TEXT_ORGANIZING');
+    let isTextFormed = (this.currentPhase === 'TEXT_FORMED');
+    let isSculpture = (this.currentPhase === 'SCULPTURE_ACTIVE');
 
     let maxDist, edgeWeight, baseAlpha;
 
-    if (isText) {
-      if (this.swarmIntensity > 0.1) {
-        maxDist = lerp(7.5, 36, this.swarmIntensity);
-        edgeWeight = lerp(0.7, 1.1, this.swarmIntensity);
-        baseAlpha = lerp(0.06, 0.20, this.swarmIntensity);
-      } else {
-        maxDist = 7.5; // Estrictamente local: nunca cruza espacios entre letras
-        edgeWeight = 0.7;
-        baseAlpha = 0.08;
-      }
+    if (isTextFormed) {
+      maxDist = 7.0; // Estrictamente local: nunca cruza espacios entre letras
+      edgeWeight = 0.7;
+      baseAlpha = 0.08;
+    } else if (isCloud) {
+      maxDist = 32.0;
+      edgeWeight = 0.9;
+      baseAlpha = 0.16;
+    } else if (isOrganizing) {
+      maxDist = 18.0;
+      edgeWeight = 0.8;
+      baseAlpha = 0.12;
     } else {
-      maxDist = CONFIG.particles.connectionDistance || 42;
+      // Modo ESCULTURA
+      maxDist = (typeof CONFIG !== 'undefined' && CONFIG.particles) ? (CONFIG.particles.connectionDistance || 42) : 42;
       edgeWeight = 1.3;
-      baseAlpha = CONFIG.particles.edgeOpacityBase || 0.22;
+      baseAlpha = (typeof CONFIG !== 'undefined' && CONFIG.particles) ? (CONFIG.particles.edgeOpacityBase || 0.22) : 0.22;
 
       if (this.currentAct === 2) {
         maxDist = 48;
@@ -250,19 +366,21 @@ class ParticleSystem {
     strokeWeight(edgeWeight);
 
     let tb = this.textBounds;
-    let hasTB = (!isText && tb && tb.width > 0 && tb.height > 0);
+    let hasTB = (isSculpture && tb && tb.width > 0 && tb.height > 0);
     let tbPad = 14;
 
-    let step = isText ? 2 : ((this.particles.length > 1200) ? 2 : 1);
-    let maxNeighbors = isText ? 2 : (CONFIG.particles.maxNeighbors || 3);
+    // En escultura solo conectamos partículas de la escultura (< 1440) para mantener la huella limpia
+    let endLimit = isSculpture ? 1440 : this.particles.length;
+    let step = isTextFormed ? 2 : (endLimit > 1200 ? 2 : 1);
+    let maxNeighbors = isTextFormed ? 2 : ((typeof CONFIG !== 'undefined' && CONFIG.particles) ? (CONFIG.particles.maxNeighbors || 3) : 3);
 
-    for (let i = 0; i < this.particles.length; i += step) {
+    for (let i = 0; i < endLimit; i += step) {
       let pA = this.particles[i];
       if (pA.alpha < 25) continue;
 
       let connections = 0;
 
-      for (let j = i + 1; j < this.particles.length; j += step) {
+      for (let j = i + 1; j < endLimit; j += step) {
         let pB = this.particles[j];
         if (pB.alpha < 25) continue;
 
@@ -276,7 +394,7 @@ class ParticleSystem {
           let d = sqrt(dSq);
           let alpha = map(d, 0, maxDist, 255 * baseAlpha, 0);
 
-          // Zona de Calma en escultura: suprimir líneas sobre la sombra del texto
+          // Zona de Calma en escultura: suprimir líneas sobre el área de la huella del texto
           if (hasTB) {
             let midX = (pA.pos.x + pB.pos.x) * 0.5;
             let midY = (pA.pos.y + pB.pos.y) * 0.5;

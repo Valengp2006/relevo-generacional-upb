@@ -172,6 +172,27 @@ class TargetSampler {
   }
 
   /**
+   * Genera las coordenadas de la nube viva inicial (Fase A)
+   * Distribución armónica y respiratoria alrededor de la zona donde nacerá el texto.
+   */
+  sampleCloud(layout, desiredCount = 1800) {
+    let pts = [];
+    let cx = (layout && layout.startX) ? layout.startX : width / 2;
+    let cy = (layout && layout.startY) ? (layout.startY + layout.totalHeight * 0.5) : height * 0.40;
+    let rx = (layout && layout.maxWidth) ? layout.maxWidth * 0.54 : width * 0.44;
+    let ry = (layout && layout.totalHeight) ? max(120, layout.totalHeight * 1.1) : height * 0.28;
+
+    for (let i = 0; i < desiredCount; i++) {
+      let angle = random(TWO_PI);
+      let rNorm = pow(random(1), 0.72);
+      let x = cx + cos(angle) * (rx * rNorm) + random(-25, 25);
+      let y = cy + sin(angle) * (ry * rNorm) + random(-22, 22);
+      pts.push({ x: x, y: y });
+    }
+    return pts;
+  }
+
+  /**
    * Escultura de Palabras estilo Jaume Plensa:
    * La silueta sólida se llena con palabras legibles del propio guion.
    */
