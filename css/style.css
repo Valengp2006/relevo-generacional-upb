@@ -215,6 +215,36 @@ canvas {
   font-size: 14px;
 }
 
+/* Botón Toggle Texto / Escultura */
+.btn-toggle {
+  border-color: rgba(224, 33, 138, 0.45);
+  background: var(--panel-bg);
+  padding: 7px 15px;
+  color: var(--text-main);
+  gap: 6px;
+}
+
+.btn-toggle:hover {
+  background: rgba(224, 33, 138, 0.20);
+  border-color: rgba(224, 33, 138, 0.8);
+  transform: translateY(-1px);
+}
+
+.btn-toggle.mode-sculpture {
+  background: linear-gradient(135deg, rgba(224, 33, 138, 0.28), rgba(0, 180, 216, 0.28));
+  border-color: var(--color-blue);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(0, 180, 216, 0.25);
+}
+
+.key-tag {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.65;
+  margin-left: 2px;
+  letter-spacing: 0.05em;
+}
+
 /* Área de Texto Editorial Inmerso */
 .main-content {
   position: absolute;

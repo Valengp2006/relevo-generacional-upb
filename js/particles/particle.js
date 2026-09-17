@@ -84,13 +84,57 @@ class Particle {
     this.applyForce(steer);
   }
 
-  update(textBounds = null) {
-    // 1. Fuerza de arribo hacia el target continuo
-    this.arrive(this.target, 1.0);
+  update(isTextMode = false, swarmIntensity = 0.0, textBounds = null) {
+    // 1. Fuerza de arribo hacia el target (gradual conforme el enjambre vivo se asienta)
+    let targetPull = isTextMode ? max(0.12, 1.0 - swarmIntensity * 0.88) : 1.0;
+    this.arrive(this.target, targetPull);
 
-    // 2. Zona de calma: interacción armónica con el titular editorial
+    // 2. Comportamiento de Enjambre Vivo (sistema fluido al inicio del slide o al volver a texto)
+    if (isTextMode && swarmIntensity > 0.01) {
+      let nX = noise(this.pos.x * 0.003, this.pos.y * 0.003, frameCount * 0.012);
+      let flowAngle = map(nX, 0, 1, -PI, PI) * 2.0;
+      let flowForce = p5.Vector.fromAngle(flowAngle).mult(CONFIG.particles.maxForce * 1.4 * swarmIntensity);
+      this.applyForce(flowForce);
+
+      // Movimiento orbital colectivo alrededor del centro
+      let toCenter = createVector(width / 2 - this.pos.x, height / 2 - this.pos.y);
+      let tangent = createVector(-toCenter.y, toCenter.x).normalize().mult(CONFIG.particles.maxForce * 0.75 * swarmIntensity);
+      this.applyForce(tangent);
+    }
+
+    // 3. Estabilización de forma y legibilidad de glifos:
+    // En modo texto consolidado, las partículas se anclan con precisión magnética a los píxeles del glifo
+    // eliminando vibraciones para que las letras sean nítidas, sólidas y perfectamente legibles
+    let d = p5.Vector.dist(this.pos, this.target);
+    let idleMult;
+
+    if (isTextMode) {
+      if (swarmIntensity < 0.06) {
+        if (d < 6.5) {
+          idleMult = 0.0; // ¡Cero vibración! Letras hiperdefinidas, sólidas y estables
+          this.vel.mult(0.35);
+          this.pos.lerp(this.target, 0.32); // Anclaje magnético al píxel del glifo
+        } else {
+          idleMult = 0.05;
+        }
+      } else {
+        idleMult = 0.40;
+      }
+    } else {
+      // En modo escultura: respiración browniana suave continua
+      idleMult = (d < 15) ? 0.35 : 1.0;
+    }
+
+    if (idleMult > 0.001) {
+      let nX = noise(this.pos.x * CONFIG.particles.idleNoiseScale + this.noiseOffset, frameCount * 0.008);
+      let idleAngle = map(nX, 0, 1, 0, TWO_PI);
+      let idleForce = p5.Vector.fromAngle(idleAngle).mult(CONFIG.particles.idleForce * idleMult);
+      this.applyForce(idleForce);
+    }
+
+    // 4. Zona de Calma: activa exclusivamente en Modo Escultura para dar espacio al titular sombra
     let insideText = false;
-    if (textBounds && textBounds.width > 0 && textBounds.height > 0) {
+    if (!isTextMode && textBounds && textBounds.width > 0 && textBounds.height > 0) {
       let pad = 24;
       if (
         this.pos.x >= textBounds.left - pad &&
@@ -99,7 +143,7 @@ class Particle {
         this.pos.y <= textBounds.bottom + pad
       ) {
         insideText = true;
-        // Suave fuerza de dispersión hacia afuera del centro del texto
+        // Suave fuerza de dispersión hacia afuera del centro del texto sombra
         let cx = (textBounds.left + textBounds.right) / 2;
         let cy = (textBounds.top + textBounds.bottom) / 2;
         let dx = this.pos.x - cx;
@@ -110,7 +154,7 @@ class Particle {
       }
     }
 
-    // 3. Protección de esquinas institucionales y HUD superior
+    // 5. Protección de esquinas institucionales y HUD superior
     // Logo UPB Forum (superior izquierdo: x < 260, y < 95)
     if (this.pos.x < 260 && this.pos.y < 95) {
       this.applyForce(createVector(0.45, 0.5));
@@ -120,43 +164,36 @@ class Particle {
       this.applyForce(createVector(-0.45, 0.5));
     }
     // HUD central superior (x cerca de width/2, y < 75)
-    if (abs(this.pos.x - width * 0.5) < 180 && this.pos.y < 75) {
+    if (abs(this.pos.x - width * 0.5) < 200 && this.pos.y < 75) {
       this.applyForce(createVector(0, 0.45));
     }
 
-    // 4. Micro-movimiento Browniano con ruido Perlin (respiración continua)
-    let d = p5.Vector.dist(this.pos, this.target);
-    let idleMult = (d < 15) ? 0.35 : 1.0;
-    if (idleMult > 0.01) {
-      let nX = noise(this.pos.x * CONFIG.particles.idleNoiseScale + this.noiseOffset, frameCount * 0.008);
-      let idleAngle = map(nX, 0, 1, 0, TWO_PI);
-      let idleForce = p5.Vector.fromAngle(idleAngle).mult(CONFIG.particles.idleForce * idleMult);
-      this.applyForce(idleForce);
-    }
-
-    // 5. Integración de Euler y amortiguamiento
+    // 6. Integración de Euler y amortiguamiento
     this.vel.add(this.acc);
-    this.vel.limit(CONFIG.particles.maxSpeed);
+    let maxSpd = (isTextMode && swarmIntensity > 0.1) ? (CONFIG.particles.maxSpeed * 1.35) : CONFIG.particles.maxSpeed;
+    this.vel.limit(maxSpd);
     this.vel.mult(CONFIG.particles.friction);
     this.pos.add(this.vel);
     this.acc.mult(0);
 
-    // 6. Suave interpolación de color (~2 segundos a 60fps con factor 0.035)
+    // 7. Suave interpolación de color (~2 segundos a 60fps con factor 0.035)
     this.r = lerp(this.r, this.targetR, 0.035);
     this.g = lerp(this.g, this.targetG, 0.035);
     this.b = lerp(this.b, this.targetB, 0.035);
 
-    // 7. Zona de calma: atenuación suave de opacidad dentro del área del titular
+    // 8. Zona de calma: atenuación suave de opacidad dentro del área del titular sombra
     let effectiveTargetAlpha = insideText ? (this.targetAlpha * 0.32) : this.targetAlpha;
     this.alpha = lerp(this.alpha, effectiveTargetAlpha, 0.08);
     this.scale = lerp(this.scale, this.targetScale, 0.08);
   }
 
-  display() {
+  display(isTextMode = false, swarmIntensity = 0.0) {
     if (this.alpha <= 4) return;
     noStroke();
     fill(this.r, this.g, this.b, this.alpha);
-    let r = this.radius * this.scale;
+    // En modo texto asentado, ligero incremento de radio (15%) para trazos sólidos y continuos
+    let r = (isTextMode && swarmIntensity < 0.06) ? (this.radius * 1.15) : this.radius;
+    r *= this.scale;
     ellipse(this.pos.x, this.pos.y, r * 2, r * 2);
   }
 }

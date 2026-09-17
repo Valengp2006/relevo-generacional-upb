@@ -131,25 +131,25 @@ class TargetSampler {
       fontSize = constrain(width * 0.040, 28, 50);
     }
 
-    // 2. Separación entre letras (letter-spacing / tracking)
-    let letterSpacing = max(3.5, fontSize * 0.075);
+    // 2. Separación explícita entre letras (letter-spacing / tracking) para evitar solapes
+    let letterSpacing = max(4.2, fontSize * 0.082);
 
     pg.textSize(fontSize);
     pg.textStyle(BOLD);
     pg.textFont('Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
 
-    // 3. Trazo engrosado para dar masa y nitidez a los glifos
+    // 3. Trazo engrosado y definido para dar masa y nitidez a los glifos
     pg.fill(255, 255, 255, 255);
     pg.stroke(255, 255, 255, 255);
-    pg.strokeWeight(max(2.4, fontSize * 0.072));
+    pg.strokeWeight(max(2.6, fontSize * 0.076));
 
     // 4. Salto de línea adaptativo con espaciado
-    let maxTextWidth = width * 0.84;
+    let maxTextWidth = width * 0.82;
     let lines = this.wrapTextWithSpacing(pg, textString, maxTextWidth, letterSpacing);
     let lineHeight = fontSize * 1.34;
     let totalHeight = lines.length * lineHeight;
 
-    // Centrado vertical seguro (sin invadir la barra superior)
+    // Centrado vertical seguro (sin invadir la barra superior ni el footer)
     let startY = max(height * 0.22, height * 0.40 - totalHeight / 2);
 
     for (let i = 0; i < lines.length; i++) {
@@ -164,7 +164,8 @@ class TargetSampler {
       lineHeight: lineHeight,
       totalHeight: totalHeight,
       startX: width / 2,
-      startY: startY
+      startY: startY,
+      maxWidth: maxTextWidth
     };
 
     return this.extractPoints(pg, desiredCount, startY - 10, startY + totalHeight + 15);
