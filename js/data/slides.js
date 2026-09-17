@@ -15,7 +15,9 @@ const SLIDES_DATA = [
     },
     subtitle: { pt: "@centrodeeventosupb", es: "@centrodeeventosupb", en: "@centrodeeventosupb" },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: false, photoUrl: null, sculptureType: "monolith_core"
+    hasPhoto: false, photoUrl: null,
+    sculptureType: "nucleo",
+    layout: "layout-center"
   },
   {
     id: 2, act: 1,
@@ -27,7 +29,9 @@ const SLIDES_DATA = [
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: true, photoUrl: "assets/images/slide-2.jpg", sculptureType: "concentrated_sphere"
+    hasPhoto: true, photoUrl: "assets/images/slide-2.jpg",
+    sculptureType: "auditorio",
+    layout: "layout-top-center"
   },
   {
     id: 3, act: 1,
@@ -43,7 +47,9 @@ const SLIDES_DATA = [
       en: "La Universidad decidió encontrarse con el mundo."
     },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: false, photoUrl: null, sculptureType: "triad_nodes"
+    hasPhoto: false, photoUrl: null,
+    sculptureType: "triada",
+    layout: "layout-tension"
   },
   {
     id: 4, act: 1,
@@ -55,7 +61,9 @@ const SLIDES_DATA = [
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: true, photoUrl: "assets/images/slide-4.jpg", sculptureType: "triad_tension"
+    hasPhoto: true, photoUrl: "assets/images/slide-4.jpg",
+    sculptureType: "triada",
+    layout: "layout-left"
   },
   {
     id: 5, act: 1,
@@ -71,7 +79,9 @@ const SLIDES_DATA = [
       en: "El impacto sí."
     },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: true, photoUrl: "assets/images/slide-5.jpg", sculptureType: "triad_expanded"
+    hasPhoto: true, photoUrl: "assets/images/slide-5.jpg",
+    sculptureType: "irradiar",
+    layout: "layout-left"
   },
   {
     id: 6, act: 2,
@@ -87,7 +97,10 @@ const SLIDES_DATA = [
       en: "Una comunidad trae transformación."
     },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: false, photoUrl: null, sculptureType: "organic_clusters"
+    hasPhoto: false, photoUrl: null,
+    sculptureType: "comunidad",
+    edgeProgress: 0.35,
+    layout: "layout-top-center"
   },
   {
     id: 7, act: 2,
@@ -99,7 +112,10 @@ const SLIDES_DATA = [
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: false, photoUrl: null, sculptureType: "organic_clusters"
+    hasPhoto: false, photoUrl: null,
+    sculptureType: "comunidad",
+    edgeProgress: 0.85,
+    layout: "layout-top-center"
   },
   {
     id: 8, act: 2,
@@ -115,7 +131,10 @@ const SLIDES_DATA = [
       en: "Las nuevas generaciones descubren nuevas rutas."
     },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: true, photoUrl: "assets/images/slide-8.jpg", sculptureType: "thickening_mesh"
+    hasPhoto: true, photoUrl: "assets/images/slide-8.jpg",
+    sculptureType: "comunidad_tejida",
+    edgeProgress: 1.0,
+    layout: "layout-left"
   },
   {
     id: 9, act: 2,
@@ -131,7 +150,9 @@ const SLIDES_DATA = [
       en: "Dos generaciones."
     },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: false, photoUrl: null, sculptureType: "bridge_tension"
+    hasPhoto: false, photoUrl: null,
+    sculptureType: "vision",
+    layout: "layout-tension"
   },
   {
     id: 10, act: 3,
@@ -147,7 +168,9 @@ const SLIDES_DATA = [
       en: "Ocurre cuando trabajan juntas."
     },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: false, photoUrl: null, sculptureType: "double_helix"
+    hasPhoto: false, photoUrl: null,
+    sculptureType: "especies",
+    layout: "layout-tension"
   },
   {
     id: 11, act: 3,
@@ -163,7 +186,9 @@ const SLIDES_DATA = [
       en: "Son el presente que muchas organizaciones aún no ven."
     },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: false, photoUrl: null, sculptureType: "intertwined_vortex"
+    hasPhoto: false, photoUrl: null,
+    sculptureType: "especies",
+    layout: "layout-top-center"
   },
   {
     id: 12, act: 3,
@@ -179,7 +204,9 @@ const SLIDES_DATA = [
       en: "Se construye."
     },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: true, photoUrl: "assets/images/slide-12.jpeg", sculptureType: "intertwined_vortex"
+    hasPhoto: true, photoUrl: "assets/images/slide-12.jpeg",
+    sculptureType: "entretejido",
+    layout: "layout-left"
   },
   {
     id: 13, act: 4,
@@ -191,7 +218,9 @@ const SLIDES_DATA = [
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
-    hasPhoto: true, photoUrl: "assets/images/slide-13.jpg", sculptureType: "portal_grid"
+    hasPhoto: true, photoUrl: "assets/images/slide-13.jpg",
+    sculptureType: "portal",
+    layout: "layout-center"
   }
 ];
 

@@ -20,44 +20,44 @@
   <!-- Capa HUD e Interfaz de Presentación -->
   <div id="ui-overlay">
     
-    <!-- Barra Superior -->
+    <!-- Barra Superior: Capa Institucional Oficial -->
     <header class="top-bar">
-      <!-- Identificación de Marca Fórum UPB -->
-      <div class="brand-lockup">
-        <div class="brand-logo-placeholder interactive">
-          <img src="assets/logos/forum_upb.svg" alt="Fórum UPB" style="height: 28px; width: auto; display: block;">
+      <!-- Esquina superior izquierda: UPB | FÓRUM Centro de Eventos -->
+      <div class="brand-lockup brand-left">
+        <img src="assets/logos/logo_upb_forum.png" alt="UPB | FÓRUM Centro de Eventos" class="official-logo logo-forum">
+      </div>
+
+      <!-- Centro: Indicador de Slide y Controles Globales -->
+      <div class="hud-center-group">
+        <div class="slide-indicator-pill">
+          <span id="act-label" class="act-tag">Ato 1 — Origem</span>
+          <span class="divider">|</span>
+          <span id="slide-counter" class="slide-counter">Slide 01 / 13</span>
         </div>
-      </div>
 
-      <!-- Indicador de Slide y Acto -->
-      <div class="slide-indicator-pill">
-        <span id="act-label" class="act-tag">Ato 1 — Origem</span>
-        <span class="divider" style="color: rgba(255,255,255,0.2);">|</span>
-        <span id="slide-counter" class="slide-counter">Slide 01 / 13</span>
-      </div>
-
-      <!-- Controles Superiores -->
-      <div class="controls-group">
-        <!-- Toggle Manual Texto / Escultura -->
-        <button id="btn-toggle-mode" class="btn btn-toggle interactive" title="Alternar entre Texto e Escultura (Tecla T)">
-          <span id="toggle-icon">✦</span>
-          <span id="toggle-label">Ver Escultura</span>
-          <span style="opacity: 0.6; font-size: 10px; margin-left: 2px;">[T]</span>
-        </button>
-
-        <!-- Selector de Idioma -->
         <div class="lang-selector interactive">
           <button class="lang-btn active" data-lang="pt">PT</button>
           <button class="lang-btn" data-lang="es">ES</button>
           <button class="lang-btn" data-lang="en">EN</button>
         </div>
 
-        <!-- Pantalla Completa -->
-        <button id="btn-fullscreen" class="btn interactive" title="Tela Cheia (Tecla F)">
+        <button id="btn-fullscreen" class="btn btn-icon interactive" title="Tela Cheia (Tecla F)">
           <span>⛶</span>
         </button>
       </div>
+
+      <!-- Esquina superior derecha: Símbolo conmemorativo 90 años UPB -->
+      <div class="brand-lockup brand-right">
+        <img src="assets/logos/logo_90_upb.png" alt="90 Años UPB" class="official-logo logo-90">
+      </div>
     </header>
+
+    <!-- Área de Texto Editorial Inmerso (responde espacialmente a cada escultura) -->
+    <main id="main-content" class="main-content">
+      <div id="title-container" class="title-container">
+        <h1 id="slide-title" class="slide-title"></h1>
+      </div>
+    </main>
 
     <!-- Capa Documental: Fotografía y Evidencia Institucional (Slides 2, 4, 5, 8, 12, 13) -->
     <div id="documentary-layer" class="documentary-layer">
@@ -85,7 +85,7 @@
           <button id="btn-prev" class="btn btn-nav interactive" title="Slide Anterior (←)">‹</button>
           <button id="btn-next" class="btn btn-nav interactive" title="Próximo Slide (→)">›</button>
         </div>
-        <div class="keyboard-hint">Navegação: [← / →] | Toggle: [T] | Fullscreen: [F]</div>
+        <div class="keyboard-hint">Navegação: [← / → / Espaço] | Tela cheia: [F]</div>
       </div>
     </footer>
 
