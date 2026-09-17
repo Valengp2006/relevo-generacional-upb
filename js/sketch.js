@@ -1,7 +1,8 @@
 /**
  * Sketch Principal — Relevo Generacional (Fórum UPB × Future Leaders Forum)
- * Ciclo principal de p5.js (setup, draw), pool fijo de 1,800 partículas continuas
- * y listeners de teclado para navegación y control de estados.
+ * Ciclo principal de p5.js (setup, draw), pool fijo de 1,800 partículas continuas,
+ * ciclo de Enjambre Vivo al inicio de cada slide, metamorfosis a escultura con tecla T,
+ * y sombra tipográfica legible de las letras mientras la escultura está viva.
  */
 
 let particleSystem;
@@ -9,6 +10,10 @@ let sampler;
 let currentSlideIndex = 0;
 let currentMode = CONFIG.modes.TEXT;
 let currentLang = CONFIG.defaultLanguage;
+
+// Control de opacidad para la sombra legible de las letras durante la escultura
+let ghostTextAlpha = 0;
+let targetGhostAlpha = 0;
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight);
@@ -23,42 +28,74 @@ function setup() {
   // Inicializar listeners de teclado y controles
   initKeyboardAndUIListeners();
 
-  // Aplicar el estado del primer slide
-  applyState();
+  // Al inicio, el sistema arranca como un sistema vivo que se transforma en letras
+  particleSystem.burstSwarm();
+  applyState(true);
 }
 
 function draw() {
   background(CONFIG.colors.bg);
 
-  // Actualizar partículas (física seek & arrive hacia objetivos) y renderizar
+  // 1. Sombra legible de las letras que permanece mientras la escultura cobra vida
+  ghostTextAlpha = lerp(ghostTextAlpha, targetGhostAlpha, 0.07);
+  drawGhostText();
+
+  // 2. Actualizar partículas (cinemática seek & arrive) y renderizar
   particleSystem.update();
   particleSystem.display();
 }
 
+/**
+ * Renderiza la sombra tipográfica legible de las letras en el fondo
+ * cuando la escultura está activa, permitiendo leer el título del slide.
+ */
+function drawGhostText() {
+  if (ghostTextAlpha <= 1 || !sampler || !sampler.lastTextLayout) return;
+  let layout = sampler.lastTextLayout;
+
+  push();
+  textAlign(CENTER, TOP);
+  textSize(layout.fontSize);
+  textStyle(BOLD);
+  textFont('Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
+
+  // Sombra suave de contraste sobre el fondo oscuro
+  drawingContext.save();
+  drawingContext.shadowColor = 'rgba(0, 0, 0, 0.85)';
+  drawingContext.shadowBlur = 14;
+
+  // Tipografía semitransparente pero nítida y perfectamente legible
+  fill(241, 245, 249, ghostTextAlpha);
+  stroke(148, 163, 184, ghostTextAlpha * 0.45);
+  strokeWeight(1.0);
+
+  for (let i = 0; i < layout.lines.length; i++) {
+    text(layout.lines[i], layout.startX, layout.startY + i * layout.lineHeight);
+  }
+  drawingContext.restore();
+  pop();
+}
+
 function windowResized() {
-  // 1. Liberar el canvas offscreen obsoleto antes de redimensionar
-  //    para que el siguiente sampleText() cree uno nuevo con las dimensiones correctas.
   if (sampler) {
     sampler.reset();
   }
-  // 2. Ajustar el canvas principal al nuevo tamaño de ventana
   resizeCanvas(windowWidth, windowHeight);
-  // 3. Recalcular y reasignar los objetivos de las partículas
-  applyState();
+  applyState(false);
 }
 
 /**
  * Aplica el estado del slide activo, actualizando la capa DOM
  * y reasignando los objetivos de las partículas de forma bidireccional.
  */
-function applyState() {
+function applyState(isSlideChange = false) {
   let slide = SLIDES_DATA[currentSlideIndex];
   if (!slide) return;
 
   // 1. Actualizar textos de la interfaz HUD
   document.getElementById('act-label').textContent = slide.actTitle[currentLang];
   document.getElementById('slide-counter').textContent = `Slide ${String(slide.id).padStart(2, '0')} / ${String(SLIDES_DATA.length).padStart(2, '0')}`;
-  
+
   let sub = slide.subtitle ? slide.subtitle[currentLang] : '';
   let narr = slide.narrative ? slide.narrative[currentLang] : '';
   let narrativeBox = document.querySelector('.narrative-container');
@@ -77,10 +114,12 @@ function applyState() {
     toggleBtn.classList.remove('mode-sculpture');
     toggleLabel.textContent = 'Ver Escultura';
     toggleIcon.textContent = '✦';
+    targetGhostAlpha = 0; // En modo texto las partículas son las letras
   } else {
     toggleBtn.classList.add('mode-sculpture');
     toggleLabel.textContent = 'Ver Texto';
     toggleIcon.textContent = '🔤';
+    targetGhostAlpha = 72; // En modo escultura la sombra de las letras permanece legible
   }
 
   // 3. Capa Documental: presencia de fotografía institucional (hasPhoto)
@@ -115,14 +154,18 @@ function applyState() {
 
   // 4. Muestreo de objetivos para las partículas
   let targets = [];
+  let headline = slide.title[currentLang];
 
   if (currentMode === CONFIG.modes.TEXT) {
-    // Renderizado offscreen y muestreo de píxeles con opacidad > 128
-    let headline = slide.title[currentLang];
+    // Modo Texto: las partículas forman el titular nítido
     targets = sampler.sampleText(headline, CONFIG.particles.count);
-  }  else {
-    // Escultura de palabras: la silueta geométrica actúa como máscara,
-    // rellenada con las propias palabras del guion de este slide (estilo Plensa).
+  } else {
+    // Modo Escultura: aseguramos que el layout de las letras esté memorizado para la sombra
+    if (!sampler.lastTextLayout) {
+      sampler.sampleText(headline, CONFIG.particles.count);
+    }
+
+    // Escultura de palabras tridimensional estilo Jaume Plensa
     let sType = (slide.sculptureType && SCULPTURES[slide.sculptureType])
       ? slide.sculptureType
       : 'monolith_core';
@@ -132,7 +175,7 @@ function applyState() {
     targets = sampler.sampleWordSculpture(sType, words, CONFIG.particles.count);
   }
 
-  // 5. Asignar los objetivos al pool continuo (con seek y arrive activo y modo adaptativo)
+  // 5. Asignar los objetivos al pool continuo
   particleSystem.assignTargets(targets, slide.act, slide.hasPhoto, slide.photoPosition, currentMode);
 }
 
@@ -142,20 +185,26 @@ function applyState() {
 function nextSlide() {
   if (currentSlideIndex < SLIDES_DATA.length - 1) {
     currentSlideIndex++;
-    applyState();
+    // Cada slide comienza en modo texto con las partículas como sistema vivo
+    currentMode = CONFIG.modes.TEXT;
+    particleSystem.burstSwarm();
+    applyState(true);
   }
 }
 
 function prevSlide() {
   if (currentSlideIndex > 0) {
     currentSlideIndex--;
-    applyState();
+    currentMode = CONFIG.modes.TEXT;
+    particleSystem.burstSwarm();
+    applyState(true);
   }
 }
 
 function toggleMode() {
+  // Alternar entre modo Texto y modo Escultura
   currentMode = (currentMode === CONFIG.modes.TEXT) ? CONFIG.modes.SCULPTURE : CONFIG.modes.TEXT;
-  applyState();
+  applyState(false);
 }
 
 function setLanguage(lang) {
@@ -164,7 +213,9 @@ function setLanguage(lang) {
     document.querySelectorAll('.lang-btn').forEach(btn => {
       btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
     });
-    applyState();
+    // Forzar recalcular el texto en el nuevo idioma
+    if (sampler) sampler.lastTextLayout = null;
+    applyState(false);
   }
 }
 
@@ -188,12 +239,6 @@ function toggleFullscreen() {
  * Configuración de Listeners de Teclado, Clic y Táctil
  */
 function initKeyboardAndUIListeners() {
-  // Listeners de teclado solicitados:
-  // - Space / ArrowRight: avanzar
-  // - ArrowLeft: retroceder
-  // - T / t: toggle manual (Texto <-> Escultura)
-  // - L / l: cambiar de idioma (PT -> ES -> EN)
-  // - F / f: pantalla completa
   window.addEventListener('keydown', (e) => {
     if (e.key === ' ' || e.key === 'ArrowRight') {
       e.preventDefault();

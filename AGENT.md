@@ -26,32 +26,21 @@ Diseñar una presentación web generativa e interactiva (HTML/CSS/JS, pantalla c
 | `lib/p5.min.js` | ✅ Listo | Binario local p5.js v1.9.4 (100% offline) |
 | `js/config.js` | ✅ Listo | Tokens de color del swirl, parámetros de simulación (1.800 partículas, seek/arrive) |
 | `js/data/slides.js` | ✅ **13/13 slides**, texto real del guion del cliente (ver sección abajo) | pt/en siguen siendo placeholder = mismo texto en español; pendiente traducción real |
-| `js/particles/particle.js` | ✅ Listo | Clase Particle con seek, arrive, Perlin noise, especies generacionales |
-| `js/particles/particle-system.js` | ✅ Listo | Pool continuo, aristas, retracción adaptativa ante fotos |
-| `js/sampler/target-sampler.js` | ✅ **Patch aplicado y verificado** | Se agregó `extractPoints()` (helper compartido) y `sampleWordSculpture(sculptureType, words, count)` — usa las 8 siluetas de `SCULPTURES` como máscara (`globalCompositeOperation:'source-in'`) rellena con las palabras del propio slide con jitter |
-| `js/sculptures/sculpture-definitions.js` | ✅ Sin cambios | Los 8 generadores geométricos existentes ahora hacen de **máscara de silueta**, no de posición final — no requirió tocarse |
-| `js/sketch.js` | ✅ **Patch aplicado y verificado** | En `applyState()`, modo escultura genera la escultura de palabras; HUD oculta contenedores vacíos automáticamente |
+| `js/particles/particle.js` | ✅ Listo | Clase Particle con cinemática seek/arrive, modo enjambre vivo (burstSwarm), estabilización tipográfica |
+| `js/particles/particle-system.js` | ✅ Listo | Pool continuo, ciclo de enjambre vivo (~1.5s), aristas adaptativas (14px en texto, 48px en escultura) |
+| `js/sampler/target-sampler.js` | ✅ Listo | Tipografía jerarquizada con trazo engrosado; esculturas Plensa con siluetas sólidas y palabras íntegras |
+| `js/sculptures/sculpture-definitions.js` | ✅ Listo | Siluetas volumétricas sólidas y contornos estructurales (Plensa pensador, tríada, puente, 2 generaciones, portal) |
+| `js/sketch.js` | ✅ Listo | Ciclo de enjambre vivo al cambiar de slide, toggle a escultura con tecla T y sombra tipográfica legible de fondo |
 | `assets/logos/forum_upb.svg` | ⚠️ Placeholder | Logosímbolo vectorial provisional. Falta archivo oficial con Belwe real |
 | `assets/images/` | ✅ **Fotos reales vinculadas** | slide-2.jpg, slide-4.jpg, slide-5.jpg, slide-8.jpg, slide-12.jpeg y slide-13.jpg vinculadas en `js/data/slides.js` |
 
-## Cambio de diseño — Escultura de palabras (Plensa)
-
-**Concepto:** en vez de una figura abstracta geométrica pura, la "escultura" de cada slide está formada por las **palabras del propio guion de ese slide**, distribuidas dentro del contorno de la silueta narrativa del acto (estilo esculturas de letras tipo Jaume Plensa — ver referencia visual que aportó Valen). Las palabras a su vez están hechas de partículas. Refuerza la idea central del reto: la misma materia se organiza como lenguaje verbal y como forma, sin añadir ni quitar elementos.
-
-**Implementación (mecanismo):**
-1. Se dibuja la silueta actual (`SCULPTURES[slide.sculptureType]`, sin cambios) como una nube de puntos rellenos en un canvas oculto → esto es la **máscara**.
-2. Se cambia `globalCompositeOperation` a `'source-in'`.
-3. Se "baldosan" las palabras del slide (título + subtítulo + narrativa del idioma activo) en filas, con jitter de posición/rotación, por encima de la máscara — el compositing hace que solo sobrevivan los píxeles de texto que caen dentro de la silueta.
-4. Se muestrean esos píxeles igual que ya hacía `sampleText` (helper `extractPoints` compartido entre ambos modos).
-
-**Toggle de dos estados (sin cambios respecto a la decisión anterior):**
-- Modo **texto**: título del slide, plano, sin silueta (como antes).
-- Modo **escultura**: ahora es la escultura de palabras descrita arriba, en vez de la figura geométrica pura.
-- Transición manual (tecla `T` / botón), nunca automática — Alma controla el ritmo en vivo.
-
-**Pendiente de validar en el navegador real (no se pudo correr en esta sesión):**
-- Rendimiento del muestreo (`sampleWordSculpture` dibuja ~6.000 círculos de máscara + el baldosado de palabras cada vez que cambia slide/modo — no corre en el loop de `draw()`, pero si se siente una pausa al presionar `T`, bajar ese conteo a ~2.500).
-- Legibilidad de las palabras a la escala de proyección real (Riesgo #2, sigue abierto).
+## Cinemática y Gramática Visual (Actualización)
+1. **Inicio de cada Slide — Enjambre Vivo:**
+   Al cambiar de diapositiva (o al cargar la presentación), las partículas inician dispersas como un fluido orgánico vivo en constante remolino. A lo largo de ~1.5 segundos, la fuerza de atracción hacia los píxeles del titular se intensifica de forma suave, haciendo que las palabras se condensen y cristalicen con nitidez absoluta.
+2. **Metamorfosis a Escultura (Tecla `T`):**
+   Al pulsar la tecla `T`, las partículas abandonan las letras y viajan en un flujo cinemático continuo para dar vida a la escultura tridimensional de palabras del slide (siluetas de Jaume Plensa, dos generaciones caminando juntas, puentes, cúpulas, etc.).
+3. **Sombra Legible de las Letras (Ghost Text):**
+   Al desvanecerse las partículas de las letras hacia la escultura, una sombra tipográfica suave pero perfectamente nítida y legible emerge en el fondo en la posición exacta del titular, permitiendo que la audiencia lea la idea central mientras contempla la escultura en primer plano. Al volver a pulsar `T`, la sombra se desvanece suavemente mientras las partículas regresan a formar el texto.
 
 ## Guion completo (13/13 slides) — texto real del cliente
 

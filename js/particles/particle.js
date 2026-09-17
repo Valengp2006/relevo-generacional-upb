@@ -1,9 +1,9 @@
 /**
  * Clase Particle — Representación cinemática individual de un nodo generativo.
  * Implementa comportamientos de dirección autónoma (Craig Reynolds):
- * - seek(target): Fuerza proporcional hacia el objetivo a máxima velocidad.
- * - arrive(target): Desaceleración progresiva dentro de un radio de frenado.
- * - Estabilización en modo texto: se ancla con firmeza para garantizar legibilidad tipográfica.
+ * - arrive(target, targetPull): Desaceleración progresiva con ponderación dinámica.
+ * - Modo Enjambre Vivo (swarmIntensity): Flujo orgánico inicial al entrar en cada slide.
+ * - Estabilización en modo texto: Anclaje firme para garantizar legibilidad tipográfica.
  */
 
 class Particle {
@@ -58,15 +58,7 @@ class Particle {
     this.acc.add(f);
   }
 
-  seek(target) {
-    let desired = p5.Vector.sub(target, this.pos);
-    desired.setMag(CONFIG.particles.maxSpeed);
-    let steer = p5.Vector.sub(desired, this.vel);
-    steer.limit(CONFIG.particles.maxForce);
-    return steer;
-  }
-
-  arrive(target) {
+  arrive(target, targetPull = 1.0) {
     let desired = p5.Vector.sub(target, this.pos);
     let d = desired.mag();
 
@@ -76,25 +68,40 @@ class Particle {
       return;
     }
 
-    let speed = CONFIG.particles.maxSpeed;
+    let speed = CONFIG.particles.maxSpeed * targetPull;
     if (d < CONFIG.particles.arriveRadius) {
-      speed = map(d, 0, CONFIG.particles.arriveRadius, 0.4, CONFIG.particles.maxSpeed);
+      speed = map(d, 0, CONFIG.particles.arriveRadius, 0.4, speed);
     }
 
     desired.setMag(speed);
     let steer = p5.Vector.sub(desired, this.vel);
-    steer.limit(CONFIG.particles.maxForce);
+    steer.limit(CONFIG.particles.maxForce * targetPull);
     this.applyForce(steer);
   }
 
-  update(isTextMode = false) {
-    // 1. Fuerza de arribo suave hacia el target
-    this.arrive(this.target);
+  update(isTextMode = false, swarmIntensity = 0) {
+    // 1. Fuerza de arribo hacia el target (se intensifica a medida que el enjambre decae)
+    let targetPull = max(0.15, 1.0 - swarmIntensity * 0.85);
+    this.arrive(this.target, targetPull);
 
-    // 2. Micro-movimiento Browniano orgánico (Ruido Perlin)
-    // En modo texto, cuando la partícula está en su posición, amortiguamos el ruido para mantener el texto nítido
+    // 2. Comportamiento de Enjambre Vivo (sistema fluido orgánico al inicio de cada slide)
+    if (swarmIntensity > 0.01) {
+      let nX = noise(this.pos.x * 0.003, this.pos.y * 0.003, frameCount * 0.012);
+      let flowAngle = map(nX, 0, 1, -PI, PI) * 2.0;
+      let flowForce = p5.Vector.fromAngle(flowAngle).mult(CONFIG.particles.maxForce * 1.3 * swarmIntensity);
+      this.applyForce(flowForce);
+
+      // Movimiento orbital colectivo suave alrededor del centro
+      let toCenter = createVector(width / 2 - this.pos.x, height / 2 - this.pos.y);
+      let tangent = createVector(-toCenter.y, toCenter.x).normalize().mult(CONFIG.particles.maxForce * 0.7 * swarmIntensity);
+      this.applyForce(tangent);
+    }
+
+    // 3. Micro-movimiento Browniano (Ruido Perlin)
+    // Cuando está en modo texto y cerca de su letra, se estabiliza para máxima nitidez
     let d = p5.Vector.dist(this.pos, this.target);
-    let idleMult = isTextMode ? (d < 14 ? 0.04 : 0.15) : (d < 10 ? 0.4 : 1.0);
+    let idleMult = isTextMode ? (d < 14 ? 0.03 : 0.15) : (d < 10 ? 0.35 : 1.0);
+    if (swarmIntensity > 0.05) idleMult = 1.0;
 
     let nX = noise(this.pos.x * CONFIG.particles.idleNoiseScale + this.noiseOffset, frameCount * 0.008);
     let nY = noise(this.pos.y * CONFIG.particles.idleNoiseScale + this.noiseOffset + 100, frameCount * 0.008);
@@ -102,13 +109,15 @@ class Particle {
     let idleForce = p5.Vector.fromAngle(idleAngle).mult(CONFIG.particles.idleForce * idleMult);
     this.applyForce(idleForce);
 
-    // 3. Integración de Euler y fricción
+    // 4. Integración de Euler y amortiguamiento
     this.vel.add(this.acc);
+    let maxSpd = (swarmIntensity > 0.1) ? CONFIG.particles.maxSpeed * 1.35 : CONFIG.particles.maxSpeed;
+    this.vel.limit(maxSpd);
     this.vel.mult(CONFIG.particles.friction);
     this.pos.add(this.vel);
     this.acc.mult(0);
 
-    // 4. Suavizado de opacidad y escala
+    // 5. Suavizado de opacidad y escala
     this.alpha = lerp(this.alpha, this.targetAlpha, 0.08);
     this.scale = lerp(this.scale, this.targetScale, 0.08);
   }

@@ -1,6 +1,9 @@
 /**
- * Clase ParticleSystem — Gestor del pool fijo continuo de partículas,
- * cálculo de aristas/conexiones estructurales y adaptación espacial por capas.
+ * Clase ParticleSystem — Gestor del pool continuo de 1,800 partículas.
+ * Controla:
+ * - Ciclo de Enjambre Vivo (burstSwarm / swarmIntensity): dispersión orgánica al inicio de cada slide.
+ * - Conexiones estructurales adaptativas según modo (texto vs escultura).
+ * - Retracción fluida ante material fotográfico documental.
  */
 
 class ParticleSystem {
@@ -10,17 +13,30 @@ class ParticleSystem {
     this.currentAct = 1;
     this.isRetracted = false;
     this.currentMode = 'text';
+    this.swarmIntensity = 0.0;
 
     // Inicializar pool continuo
     for (let i = 0; i < this.count; i++) {
-      let initX = width / 2 + random(-width * 0.25, width * 0.25);
-      let initY = height / 2 + random(-height * 0.25, height * 0.25);
+      let initX = width / 2 + random(-width * 0.3, width * 0.3);
+      let initY = height / 2 + random(-height * 0.3, height * 0.3);
       this.particles.push(new Particle(initX, initY, i));
     }
   }
 
   /**
-   * Asigna los nuevos objetivos calculados, conservando la física continua sin resets.
+   * Dispara el estado de 'sistema vivo': las partículas se dispersan con ímpetu
+   * orgánico antes de condensarse progresivamente en las letras del nuevo slide.
+   */
+  burstSwarm() {
+    this.swarmIntensity = 1.0;
+    for (let i = 0; i < this.particles.length; i++) {
+      let kick = p5.Vector.random2D().mult(random(4.0, 9.0));
+      this.particles[i].vel.add(kick);
+    }
+  }
+
+  /**
+   * Asigna los nuevos objetivos calculados preservando la física continua sin resets.
    */
   assignTargets(targetPoints, actNumber, hasPhoto, photoPosition, currentMode = 'text') {
     this.currentAct = actNumber || 1;
@@ -30,17 +46,17 @@ class ParticleSystem {
     let totalTargets = targetPoints.length;
     if (totalTargets === 0) return;
 
-    // Adaptación ante la presencia de fotografía documental
+    // Adaptación espacial ante la presencia de fotografía documental
     let offsetX = 0;
     let offsetY = 0;
     let scaleFactor = 1.0;
     let targetAlpha = 240;
 
     if (this.isRetracted) {
-      targetAlpha = 150; // Atenuación suave para dar protagonismo a la evidencia
+      targetAlpha = 150;
       scaleFactor = 0.72;
       if (photoPosition === 'right' || !photoPosition) {
-        offsetX = -width * 0.22; // Cede espacio hacia la izquierda
+        offsetX = -width * 0.22;
       } else if (photoPosition === 'left') {
         offsetX = width * 0.22;
       }
@@ -53,7 +69,6 @@ class ParticleSystem {
       if (i < totalTargets) {
         target = targetPoints[i];
       } else {
-        // Partículas sobrantes orbitan suavemente puntos clave
         let baseTarget = targetPoints[i % totalTargets];
         let angle = random(TWO_PI);
         let dist = random(10, 40);
@@ -70,7 +85,7 @@ class ParticleSystem {
       p.setTargetAlpha(targetAlpha);
       p.setTargetScale(scaleFactor);
 
-      // Recategorización de especies generacionales por Acto
+      // Recategorización de especies generacionales según el Acto
       if (this.currentAct === 1) {
         p.setSpecies(i % 8 === 0 ? 'B' : 'A');
       } else if (this.currentAct === 2) {
@@ -83,8 +98,14 @@ class ParticleSystem {
 
   update() {
     let isText = (this.currentMode === 'text');
+
+    // Decaimiento gradual del enjambre vivo (~1.5 segundos a 60fps)
+    if (this.swarmIntensity > 0) {
+      this.swarmIntensity = max(0, this.swarmIntensity - 0.011);
+    }
+
     for (let i = 0; i < this.particles.length; i++) {
-      this.particles[i].update(isText);
+      this.particles[i].update(isText, this.swarmIntensity);
     }
   }
 
@@ -98,16 +119,20 @@ class ParticleSystem {
 
   /**
    * Conexiones vinculadas (aristas estructurales):
-   * - En modo TEXTO: conexión microscópica (máx 14px) solo dentro del mismo trazo de la letra.
-   *   Evita telas de araña entre letras y garantiza lectura impecable.
-   * - En modo ESCULTURA: conexión amplia (45-55px) que genera la red tridimensional de Jaume Plensa.
+   * - Durante enjambre vivo: red orgánica fluida que se contrae.
+   * - En modo TEXTO consolidado: conexión corta (14px) dentro del trazo sin ensuciar el texto.
+   * - En modo ESCULTURA: red espacial amplia (48px) de acero y palabras estilo Plensa.
    */
   drawConnections() {
     let isText = (this.currentMode === 'text');
 
-    let maxDist = isText ? 14 : CONFIG.particles.connectionDistance;
-    let edgeWeight = isText ? 0.8 : 1.4;
-    let baseAlpha = isText ? 0.12 : CONFIG.particles.edgeOpacityBase;
+    // Interpolación dinámica: durante el enjambre vivo hay una red amplia que luego se afina
+    let maxDist = isText
+      ? lerp(14, 40, this.swarmIntensity)
+      : CONFIG.particles.connectionDistance;
+
+    let edgeWeight = isText ? lerp(0.8, 1.2, this.swarmIntensity) : 1.4;
+    let baseAlpha = isText ? lerp(0.12, 0.26, this.swarmIntensity) : CONFIG.particles.edgeOpacityBase;
 
     if (!isText) {
       if (this.currentAct === 2) {

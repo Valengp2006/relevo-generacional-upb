@@ -87,6 +87,16 @@ class TargetSampler {
       pg.text(lines[i], width / 2, startY + i * lineHeight);
     }
 
+    // Guardar layout para renderizar la sombra de las letras mientras la escultura vive
+    this.lastTextLayout = {
+      lines: lines,
+      fontSize: fontSize,
+      lineHeight: lineHeight,
+      totalHeight: totalHeight,
+      startX: width / 2,
+      startY: startY
+    };
+
     return this.extractPoints(pg, desiredCount, startY - 10, startY + totalHeight + 15);
   }
 
