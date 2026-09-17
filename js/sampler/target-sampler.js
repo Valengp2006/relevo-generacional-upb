@@ -2,23 +2,22 @@
  * Clase TargetSampler — Muestreador tipográfico y escultórico en canvas offscreen (p5.Graphics).
  * 
  * - sampleText:
- *   Renderiza titulares tipográficos de alta legibilidad, con escala adaptativa,
- *   trazos engrosados para garantizar densidad de partículas y posicionamiento
- *   vertical optimizado que respeta la barra HUD superior.
+ *   Renderiza titulares con tipografía agrandada, separación de letras (letter-spacing / tracking)
+ *   explícita para evitar solapamientos, trazo engrosado y anclaje sin ruido para contornos
+ *   definidos con máxima nitidez.
  * 
  * - sampleWordSculpture (Estilo Jaume Plensa):
  *   Genera esculturas tridimensionales donde las palabras del guion llenan
- *   siluetas humanas y arquitectónicas sólidas, conservando la legibilidad
- *   de los caracteres y definiendo con nitidez la forma escultural.
+ *   siluetas humanas y arquitectónicas sólidas, conservando la legibilidad.
  * 
  * - extractPoints:
- *   Escaneo adaptativo con balance automático de densidad para entregar
- *   exactamente el pool de 1,800 partículas con ordenamiento espacial anti-cruces.
+ *   Muestreo de alta fidelidad que preserva aristas y contornos sin distorsión aleatoria.
  */
 
 class TargetSampler {
   constructor() {
     this.offscreen = null;
+    this.lastTextLayout = null;
   }
 
   ensureGraphics(w, h) {
@@ -42,7 +41,75 @@ class TargetSampler {
   }
 
   /**
-   * Renderiza el texto del titular con máxima legibilidad y extrae coordenadas.
+   * Calcula el ancho total de una cadena con espaciado entre letras explícito.
+   */
+  measureSpacedText(pg, str, spacing) {
+    if (!str) return 0;
+    let chars = str.split('');
+    let w = 0;
+    for (let i = 0; i < chars.length; i++) {
+      w += pg.textWidth(chars[i]);
+    }
+    w += Math.max(0, chars.length - 1) * spacing;
+    return w;
+  }
+
+  /**
+   * Envuelve el texto en múltiples líneas respetando el ancho máximo y el letter-spacing.
+   */
+  wrapTextWithSpacing(pg, text, maxWidth, spacing) {
+    if (!text) return [''];
+    let words = text.split(' ');
+    let lines = [];
+    let currentLine = '';
+
+    for (let i = 0; i < words.length; i++) {
+      let testLine = currentLine.length === 0 ? words[i] : currentLine + ' ' + words[i];
+      let testWidth = this.measureSpacedText(pg, testLine, spacing);
+
+      if (testWidth > maxWidth && currentLine.length > 0) {
+        lines.push(currentLine);
+        currentLine = words[i];
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine.length > 0) {
+      lines.push(currentLine);
+    }
+    return lines;
+  }
+
+  /**
+   * Dibuja una línea de texto centrada horizontalmente con espaciado uniforme entre caracteres.
+   * Funciona tanto en p5.Graphics como en el canvas principal (window).
+   */
+  drawSpacedLine(target, str, centerX, y, spacing) {
+    if (!str) return;
+    let chars = str.split('');
+    let charWidths = [];
+    let totalW = 0;
+
+    for (let i = 0; i < chars.length; i++) {
+      let cw = target.textWidth(chars[i]);
+      charWidths.push(cw);
+      totalW += cw;
+    }
+    totalW += Math.max(0, chars.length - 1) * spacing;
+
+    let startX = centerX - totalW / 2;
+    let curX = startX;
+
+    target.textAlign(LEFT, TOP);
+    for (let i = 0; i < chars.length; i++) {
+      target.text(chars[i], curX, y);
+      curX += charWidths[i] + spacing;
+    }
+  }
+
+  /**
+   * Renderiza el texto del titular con tipografía más grande, separación de caracteres
+   * y formas bien definidas.
    * @param {string} textString Texto del titular
    * @param {number} desiredCount Cantidad objetivo de partículas (~1800)
    * @returns {Array<{x: number, y: number}>} Coordenadas extraídas
@@ -53,44 +120,47 @@ class TargetSampler {
 
     pg.clear();
 
-    // 1. Tipografía proporcional y jerarquizada según longitud del texto
+    // 1. Tipografía más grande y jerarquizada
     let len = textString ? textString.length : 0;
     let fontSize;
     if (len <= 25) {
-      fontSize = constrain(width * 0.052, 38, 64);
+      fontSize = constrain(width * 0.065, 46, 78);
     } else if (len <= 52) {
-      fontSize = constrain(width * 0.040, 28, 50);
+      fontSize = constrain(width * 0.050, 36, 62);
     } else {
-      fontSize = constrain(width * 0.034, 24, 42);
+      fontSize = constrain(width * 0.040, 28, 50);
     }
+
+    // 2. Separación entre letras (letter-spacing / tracking)
+    let letterSpacing = max(3.5, fontSize * 0.075);
 
     pg.textSize(fontSize);
     pg.textStyle(BOLD);
     pg.textFont('Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
-    pg.textAlign(CENTER, TOP);
 
-    // 2. Trazo engrosado sutil para asegurar que cada letra tenga masa y densidad de partículas
+    // 3. Trazo engrosado para dar masa y nitidez a los glifos
     pg.fill(255, 255, 255, 255);
     pg.stroke(255, 255, 255, 255);
-    pg.strokeWeight(max(2.0, fontSize * 0.065));
+    pg.strokeWeight(max(2.4, fontSize * 0.072));
 
-    // 3. Salto de línea automático dentro del 84% del ancho de ventana
+    // 4. Salto de línea adaptativo con espaciado
     let maxTextWidth = width * 0.84;
-    let lines = this.wrapText(pg, textString, maxTextWidth);
-    let lineHeight = fontSize * 1.30;
+    let lines = this.wrapTextWithSpacing(pg, textString, maxTextWidth, letterSpacing);
+    let lineHeight = fontSize * 1.34;
     let totalHeight = lines.length * lineHeight;
 
-    // Centrado vertical en la zona visible (con margen superior seguro para el HUD)
+    // Centrado vertical seguro (sin invadir la barra superior)
     let startY = max(height * 0.22, height * 0.40 - totalHeight / 2);
 
     for (let i = 0; i < lines.length; i++) {
-      pg.text(lines[i], width / 2, startY + i * lineHeight);
+      this.drawSpacedLine(pg, lines[i], width / 2, startY + i * lineHeight, letterSpacing);
     }
 
     // Guardar layout para renderizar la sombra de las letras mientras la escultura vive
     this.lastTextLayout = {
       lines: lines,
       fontSize: fontSize,
+      letterSpacing: letterSpacing,
       lineHeight: lineHeight,
       totalHeight: totalHeight,
       startX: width / 2,
@@ -102,18 +172,13 @@ class TargetSampler {
 
   /**
    * Escultura de Palabras estilo Jaume Plensa:
-   * La silueta sólida del acto se llena con bandas horizontales de palabras del guion,
-   * manteniendo los caracteres íntegros y legibles.
-   * @param {string} sculptureType Identificador en SCULPTURES
-   * @param {string} words Texto acumulado del slide
-   * @param {number} desiredCount Cantidad objetivo de partículas (~1800)
+   * La silueta sólida se llena con palabras legibles del propio guion.
    */
   sampleWordSculpture(sculptureType, words, desiredCount = 1800) {
     this.ensureGraphics(width, height);
     let pg = this.offscreen;
     pg.clear();
 
-    // 1. Obtener la definición escultórica
     let sc = (typeof SCULPTURES !== 'undefined' && SCULPTURES[sculptureType])
       ? SCULPTURES[sculptureType]
       : (typeof SCULPTURES !== 'undefined' && SCULPTURES.monolith_core ? SCULPTURES.monolith_core : null);
@@ -122,12 +187,12 @@ class TargetSampler {
       return this.sampleText(words || 'RELEVO GENERACIONAL', desiredCount);
     }
 
-    // 2. Dibujar silueta sólida como máscara
+    // 1. Dibujar silueta sólida
     pg.push();
     sc.draw(pg, width, height);
     pg.pop();
 
-    // 3. Máscara de composición 'source-in': las palabras solo existen dentro de la silueta sólida
+    // 2. Máscara de composición 'source-in'
     pg.drawingContext.save();
     pg.drawingContext.globalCompositeOperation = 'source-in';
 
@@ -138,20 +203,17 @@ class TargetSampler {
     pg.textFont('Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
     pg.textAlign(LEFT, TOP);
 
-    // Preparar lista de palabras del guion
     let cleanWords = (words && words.trim().length > 0)
       ? words.toUpperCase().replace(/[^\w\sáéíóúüñ¿?¡!+@]/gi, ' ').trim()
       : 'RELEVO GENERACIONAL CO-CREACIÓN FUTURO';
     let wordList = cleanWords.split(/\s+/).filter(w => w.length > 0);
     if (wordList.length === 0) wordList = ['RELEVO', 'GENERACIONAL'];
 
-    // Tamaño de fuente tipográfica dentro de la escultura (estilo bandas de Plensa)
-    let wordFontSize = constrain(width * 0.022, 17, 26);
+    let wordFontSize = constrain(width * 0.023, 18, 28);
     pg.textSize(wordFontSize);
-    let rowHeight = wordFontSize * 1.26;
+    let rowHeight = wordFontSize * 1.28;
 
     let wi = 0;
-    // Rellenar el volumen con filas continuas de palabras
     let s = min(width, height);
     let topBound = height / 2 - s * 0.40;
     let bottomBound = height / 2 + s * 0.40;
@@ -164,13 +226,13 @@ class TargetSampler {
         let w = wordList[wi % wordList.length];
         wi++;
         pg.text(w, x, y);
-        x += pg.textWidth(w) + wordFontSize * 0.60;
+        x += pg.textWidth(w) + wordFontSize * 0.65;
       }
     }
     pg.pop();
     pg.drawingContext.restore();
 
-    // 4. Realce de contorno estructural sutil (como la jaula de acero de Plensa)
+    // 3. Realce de contorno estructural sutil
     if (sc.drawContour) {
       pg.drawingContext.save();
       pg.drawingContext.globalCompositeOperation = 'source-over';
@@ -185,17 +247,16 @@ class TargetSampler {
   }
 
   /**
-   * Extrae exactamente ~desiredCount coordenadas de píxeles activos (alpha > 128)
-   * calculando dinámicamente el salto de muestreo óptimo y ordenando espacialmente.
+   * Extrae ~desiredCount coordenadas de píxeles activos (alpha > 128)
+   * sin introducir distorsiones aleatorias que desdibujen los trazos tipográficos.
    */
   extractPoints(pg, desiredCount = 1800, minY = 0, maxY = height) {
     pg.loadPixels();
     let yStart = max(0, floor(minY));
     let yEnd = min(height, ceil(maxY));
 
-    // Conteo rápido de densidad de píxeles activos
     let activeCandidates = 0;
-    let checkStep = 4;
+    let checkStep = 3;
     for (let y = yStart; y < yEnd; y += checkStep) {
       for (let x = 0; x < width; x += checkStep) {
         let idx = (x + y * width) * 4;
@@ -205,7 +266,6 @@ class TargetSampler {
       }
     }
 
-    // Calcular paso de muestreo fino para alcanzar desiredCount
     let ratio = activeCandidates / desiredCount;
     let sampleStep = max(2, round(checkStep * sqrt(max(0.18, ratio))));
 
@@ -219,51 +279,28 @@ class TargetSampler {
       }
     }
 
-    // Si faltan puntos para completar el pool de 1,800, duplicar con jitter subpíxel sobre trazos
+    // Relleno de puntos hasta completar 1,800: duplicación exacta sobre trazo SIN ruido aleatorio
+    // para mantener contornos tipográficos impecables
     if (points.length > 0 && points.length < desiredCount) {
       let origLen = points.length;
       let diff = desiredCount - origLen;
       for (let i = 0; i < diff; i++) {
         let p = points[i % origLen];
         points.push({
-          x: p.x + random(-1.2, 1.2),
-          y: p.y + random(-1.2, 1.2)
+          x: p.x,
+          y: p.y
         });
       }
     }
 
-    // Si sobran, recortar
     if (points.length > desiredCount) {
       points.length = desiredCount;
     }
 
-    // Ordenamiento espacial para interpolación física sin cruces caóticos
+    // Ordenamiento espacial ordenado por flujo visual para interpolación limpia
     points.sort((a, b) => (a.x + a.y * 0.5) - (b.x + b.y * 0.5));
 
     return points;
-  }
-
-  wrapText(pg, text, maxWidth) {
-    if (!text) return [''];
-    let words = text.split(' ');
-    let lines = [];
-    let currentLine = '';
-
-    for (let i = 0; i < words.length; i++) {
-      let testLine = currentLine.length === 0 ? words[i] : currentLine + ' ' + words[i];
-      let testWidth = pg.textWidth(testLine);
-
-      if (testWidth > maxWidth && currentLine.length > 0) {
-        lines.push(currentLine);
-        currentLine = words[i];
-      } else {
-        currentLine = testLine;
-      }
-    }
-    if (currentLine.length > 0) {
-      lines.push(currentLine);
-    }
-    return lines;
   }
 }
 

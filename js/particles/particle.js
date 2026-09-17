@@ -3,7 +3,7 @@
  * Implementa comportamientos de dirección autónoma (Craig Reynolds):
  * - arrive(target, targetPull): Desaceleración progresiva con ponderación dinámica.
  * - Modo Enjambre Vivo (swarmIntensity): Flujo orgánico inicial al entrar en cada slide.
- * - Estabilización en modo texto: Anclaje firme para garantizar legibilidad tipográfica.
+ * - Anclaje Tipográfico Definido: Fijación precisa sobre el trazo para formas nítidas.
  */
 
 class Particle {
@@ -14,7 +14,7 @@ class Particle {
     this.acc = createVector(0, 0);
     this.target = createVector(x, y);
 
-    this.baseRadius = CONFIG.particles.baseRadius + (index % 4 === 0 ? 0.8 : 0);
+    this.baseRadius = CONFIG.particles.baseRadius + (index % 4 === 0 ? 0.9 : 0.2);
     this.radius = this.baseRadius;
     this.species = (index % 2 === 0) ? 'A' : 'B';
 
@@ -62,7 +62,7 @@ class Particle {
     let desired = p5.Vector.sub(target, this.pos);
     let d = desired.mag();
 
-    if (d < 0.1) {
+    if (d < 0.2) {
       this.pos.set(target.x, target.y);
       this.vel.mult(0);
       return;
@@ -70,7 +70,7 @@ class Particle {
 
     let speed = CONFIG.particles.maxSpeed * targetPull;
     if (d < CONFIG.particles.arriveRadius) {
-      speed = map(d, 0, CONFIG.particles.arriveRadius, 0.4, speed);
+      speed = map(d, 0, CONFIG.particles.arriveRadius, 0.2, speed);
     }
 
     desired.setMag(speed);
@@ -80,34 +80,47 @@ class Particle {
   }
 
   update(isTextMode = false, swarmIntensity = 0) {
-    // 1. Fuerza de arribo hacia el target (se intensifica a medida que el enjambre decae)
+    // 1. Fuerza de arribo hacia el target (intensificada conforme el enjambre vivo decae)
     let targetPull = max(0.15, 1.0 - swarmIntensity * 0.85);
     this.arrive(this.target, targetPull);
 
-    // 2. Comportamiento de Enjambre Vivo (sistema fluido orgánico al inicio de cada slide)
+    // 2. Comportamiento de Enjambre Vivo (sistema fluido al inicio del slide)
     if (swarmIntensity > 0.01) {
       let nX = noise(this.pos.x * 0.003, this.pos.y * 0.003, frameCount * 0.012);
       let flowAngle = map(nX, 0, 1, -PI, PI) * 2.0;
       let flowForce = p5.Vector.fromAngle(flowAngle).mult(CONFIG.particles.maxForce * 1.3 * swarmIntensity);
       this.applyForce(flowForce);
 
-      // Movimiento orbital colectivo suave alrededor del centro
+      // Movimiento orbital colectivo alrededor del centro
       let toCenter = createVector(width / 2 - this.pos.x, height / 2 - this.pos.y);
       let tangent = createVector(-toCenter.y, toCenter.x).normalize().mult(CONFIG.particles.maxForce * 0.7 * swarmIntensity);
       this.applyForce(tangent);
     }
 
-    // 3. Micro-movimiento Browniano (Ruido Perlin)
-    // Cuando está en modo texto y cerca de su letra, se estabiliza para máxima nitidez
+    // 3. Estabilización de forma y micro-movimiento:
+    // En modo texto consolidado, las partículas se bloquean con precisión en los glifos para máxima nitidez
     let d = p5.Vector.dist(this.pos, this.target);
-    let idleMult = isTextMode ? (d < 14 ? 0.03 : 0.15) : (d < 10 ? 0.35 : 1.0);
-    if (swarmIntensity > 0.05) idleMult = 1.0;
+    let idleMult;
 
-    let nX = noise(this.pos.x * CONFIG.particles.idleNoiseScale + this.noiseOffset, frameCount * 0.008);
-    let nY = noise(this.pos.y * CONFIG.particles.idleNoiseScale + this.noiseOffset + 100, frameCount * 0.008);
-    let idleAngle = map(nX, 0, 1, 0, TWO_PI);
-    let idleForce = p5.Vector.fromAngle(idleAngle).mult(CONFIG.particles.idleForce * idleMult);
-    this.applyForce(idleForce);
+    if (isTextMode && swarmIntensity < 0.04) {
+      if (d < 6.0) {
+        idleMult = 0.0; // Sin vibración en el trazo: letras nítidas, sólidas y perfectamente legibles
+        this.vel.mult(0.5);
+        this.pos.lerp(this.target, 0.28); // Anclaje magnético al píxel del glifo
+      } else {
+        idleMult = 0.06;
+      }
+    } else {
+      idleMult = (d < 10) ? 0.35 : 1.0;
+    }
+
+    if (idleMult > 0.001) {
+      let nX = noise(this.pos.x * CONFIG.particles.idleNoiseScale + this.noiseOffset, frameCount * 0.008);
+      let nY = noise(this.pos.y * CONFIG.particles.idleNoiseScale + this.noiseOffset + 100, frameCount * 0.008);
+      let idleAngle = map(nX, 0, 1, 0, TWO_PI);
+      let idleForce = p5.Vector.fromAngle(idleAngle).mult(CONFIG.particles.idleForce * idleMult);
+      this.applyForce(idleForce);
+    }
 
     // 4. Integración de Euler y amortiguamiento
     this.vel.add(this.acc);

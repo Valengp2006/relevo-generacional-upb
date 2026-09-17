@@ -54,7 +54,6 @@ function drawGhostText() {
   let layout = sampler.lastTextLayout;
 
   push();
-  textAlign(CENTER, TOP);
   textSize(layout.fontSize);
   textStyle(BOLD);
   textFont('Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
@@ -69,8 +68,9 @@ function drawGhostText() {
   stroke(148, 163, 184, ghostTextAlpha * 0.45);
   strokeWeight(1.0);
 
+  let spacing = layout.letterSpacing || 4.0;
   for (let i = 0; i < layout.lines.length; i++) {
-    text(layout.lines[i], layout.startX, layout.startY + i * layout.lineHeight);
+    sampler.drawSpacedLine(window, layout.lines[i], width / 2, layout.startY + i * layout.lineHeight, spacing);
   }
   drawingContext.restore();
   pop();

@@ -27,20 +27,25 @@ Diseñar una presentación web generativa e interactiva (HTML/CSS/JS, pantalla c
 | `js/config.js` | ✅ Listo | Tokens de color del swirl, parámetros de simulación (1.800 partículas, seek/arrive) |
 | `js/data/slides.js` | ✅ **13/13 slides**, texto real del guion del cliente (ver sección abajo) | pt/en siguen siendo placeholder = mismo texto en español; pendiente traducción real |
 | `js/particles/particle.js` | ✅ Listo | Clase Particle con cinemática seek/arrive, modo enjambre vivo (burstSwarm), estabilización tipográfica |
-| `js/particles/particle-system.js` | ✅ Listo | Pool continuo, ciclo de enjambre vivo (~1.5s), aristas adaptativas (14px en texto, 48px en escultura) |
-| `js/sampler/target-sampler.js` | ✅ Listo | Tipografía jerarquizada con trazo engrosado; esculturas Plensa con siluetas sólidas y palabras íntegras |
+| `js/particles/particle-system.js` | ✅ Listo | Pool continuo, ciclo de enjambre vivo (~1.5s), aristas adaptativas (8px en texto para no cruzar letras, 48px en escultura) |
+| `js/sampler/target-sampler.js` | ✅ Listo | Tipografía ampliada con letter-spacing / tracking explícito y trazo engrosado; esculturas Plensa nítidas |
 | `js/sculptures/sculpture-definitions.js` | ✅ Listo | Siluetas volumétricas sólidas y contornos estructurales (Plensa pensador, tríada, puente, 2 generaciones, portal) |
-| `js/sketch.js` | ✅ Listo | Ciclo de enjambre vivo al cambiar de slide, toggle a escultura con tecla T y sombra tipográfica legible de fondo |
+| `js/sketch.js` | ✅ Listo | Enjambre vivo inicial, toggle a escultura con tecla T y sombra tipográfica espaciada legible en fondo |
 | `assets/logos/forum_upb.svg` | ⚠️ Placeholder | Logosímbolo vectorial provisional. Falta archivo oficial con Belwe real |
 | `assets/images/` | ✅ **Fotos reales vinculadas** | slide-2.jpg, slide-4.jpg, slide-5.jpg, slide-8.jpg, slide-12.jpeg y slide-13.jpg vinculadas en `js/data/slides.js` |
 
 ## Cinemática y Gramática Visual (Actualización)
-1. **Inicio de cada Slide — Enjambre Vivo:**
-   Al cambiar de diapositiva (o al cargar la presentación), las partículas inician dispersas como un fluido orgánico vivo en constante remolino. A lo largo de ~1.5 segundos, la fuerza de atracción hacia los píxeles del titular se intensifica de forma suave, haciendo que las palabras se condensen y cristalicen con nitidez absoluta.
-2. **Metamorfosis a Escultura (Tecla `T`):**
+1. **Tipografía Monumental y Formas Definidas:**
+   - Letra ampliada entre un 20% y 25% (hasta 78px en titulares cortos y 52px en largos).
+   - Separación explícita de caracteres (`letterSpacing` / tracking de 3.5 a 6px) para evitar empaste visual entre letras.
+   - Anclaje magnético en trazo y supresión de oscilaciones parásitas al llegar a la letra, logrando bordes afilados y legibilidad instantánea.
+   - Aristas en modo texto acotadas a 8px: nunca cruzan entre letras ni tapan los huecos de 'O', 'A', 'P' y 'R'.
+2. **Inicio de cada Slide — Enjambre Vivo:**
+   Al cambiar de diapositiva, las partículas inician dispersas como un fluido orgánico vivo en constante remolino. A lo largo de ~1.5 segundos, la fuerza de atracción hacia los píxeles del titular se intensifica de forma suave, haciendo que las palabras se condensen y cristalicen con nitidez absoluta.
+3. **Metamorfosis a Escultura (Tecla `T`):**
    Al pulsar la tecla `T`, las partículas abandonan las letras y viajan en un flujo cinemático continuo para dar vida a la escultura tridimensional de palabras del slide (siluetas de Jaume Plensa, dos generaciones caminando juntas, puentes, cúpulas, etc.).
-3. **Sombra Legible de las Letras (Ghost Text):**
-   Al desvanecerse las partículas de las letras hacia la escultura, una sombra tipográfica suave pero perfectamente nítida y legible emerge en el fondo en la posición exacta del titular, permitiendo que la audiencia lea la idea central mientras contempla la escultura en primer plano. Al volver a pulsar `T`, la sombra se desvanece suavemente mientras las partículas regresan a formar el texto.
+4. **Sombra Legible de las Letras (Ghost Text):**
+   Al desvanecerse las partículas hacia la escultura, una sombra tipográfica suave pero perfectamente nítida y legible emerge en el fondo en la posición exacta del titular, con el mismo espaciado entre letras, permitiendo que la audiencia lea la idea central mientras contempla la escultura en primer plano. Al volver a pulsar `T`, la sombra se desvanece suavemente mientras las partículas regresan a formar el texto.
 
 ## Guion completo (13/13 slides) — texto real del cliente
 

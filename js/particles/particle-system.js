@@ -71,7 +71,7 @@ class ParticleSystem {
       } else {
         let baseTarget = targetPoints[i % totalTargets];
         let angle = random(TWO_PI);
-        let dist = random(10, 40);
+        let dist = random(6, 25);
         target = {
           x: baseTarget.x + cos(angle) * dist,
           y: baseTarget.y + sin(angle) * dist
@@ -119,20 +119,20 @@ class ParticleSystem {
 
   /**
    * Conexiones vinculadas (aristas estructurales):
-   * - Durante enjambre vivo: red orgánica fluida que se contrae.
-   * - En modo TEXTO consolidado: conexión corta (14px) dentro del trazo sin ensuciar el texto.
+   * - Durante enjambre vivo: red orgánica que se contrae.
+   * - En modo TEXTO consolidado: conexión microscópica (máx 8px) para evitar
+   *   telarañas entre letras y preservar los espacios y huecos tipográficos.
    * - En modo ESCULTURA: red espacial amplia (48px) de acero y palabras estilo Plensa.
    */
   drawConnections() {
     let isText = (this.currentMode === 'text');
 
-    // Interpolación dinámica: durante el enjambre vivo hay una red amplia que luego se afina
     let maxDist = isText
-      ? lerp(14, 40, this.swarmIntensity)
+      ? lerp(8, 38, this.swarmIntensity)
       : CONFIG.particles.connectionDistance;
 
-    let edgeWeight = isText ? lerp(0.8, 1.2, this.swarmIntensity) : 1.4;
-    let baseAlpha = isText ? lerp(0.12, 0.26, this.swarmIntensity) : CONFIG.particles.edgeOpacityBase;
+    let edgeWeight = isText ? lerp(0.6, 1.2, this.swarmIntensity) : 1.4;
+    let baseAlpha = isText ? lerp(0.06, 0.25, this.swarmIntensity) : CONFIG.particles.edgeOpacityBase;
 
     if (!isText) {
       if (this.currentAct === 2) {
