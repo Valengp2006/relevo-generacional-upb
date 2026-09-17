@@ -108,64 +108,90 @@ class TargetSampler {
   }
 
   /**
-   * Renderiza el texto del titular con tipografía más grande, separación de caracteres
-   * y formas bien definidas.
+   * Renderiza el texto del titular con tipografía de alto contraste, separación de caracteres
+   * y diagramación adaptativa (centrado general o dos columnas cuando hay fotografía documental).
    * @param {string} textString Texto del titular
    * @param {number} desiredCount Cantidad objetivo de partículas (~1800)
+   * @param {boolean} hasPhoto Indica si el slide contiene una fotografía documental a la derecha
    * @returns {Array<{x: number, y: number}>} Coordenadas extraídas
    */
-  sampleText(textString, desiredCount = 1800) {
+  sampleText(textString, desiredCount = 1800, hasPhoto = false) {
     this.ensureGraphics(width, height);
     let pg = this.offscreen;
 
     pg.clear();
 
-    // 1. Tipografía más grande y jerarquizada
     let len = textString ? textString.length : 0;
     let fontSize;
-    if (len <= 25) {
-      fontSize = constrain(width * 0.065, 46, 78);
-    } else if (len <= 52) {
-      fontSize = constrain(width * 0.050, 36, 62);
+    let maxTextWidth;
+    let centerX;
+    let startY;
+
+    if (hasPhoto) {
+      // DIAGRAMACIÓN EN COLUMNA IZQUIERDA (respeta el espacio fotográfico en el cuadrante derecho)
+      maxTextWidth = min(width * 0.44, 620);
+      centerX = width * 0.27; // Centrado armónico en la mitad izquierda de la pantalla
+
+      if (len <= 25) {
+        fontSize = constrain(width * 0.048, 34, 54);
+      } else if (len <= 52) {
+        fontSize = constrain(width * 0.038, 26, 42);
+      } else {
+        fontSize = constrain(width * 0.030, 22, 34);
+      }
     } else {
-      fontSize = constrain(width * 0.040, 28, 50);
+      // DIAGRAMACIÓN EDITORIAL CENTRADA A TODO LO ANCHO
+      maxTextWidth = width * 0.82;
+      centerX = width / 2;
+
+      if (len <= 25) {
+        fontSize = constrain(width * 0.065, 46, 78);
+      } else if (len <= 52) {
+        fontSize = constrain(width * 0.050, 36, 62);
+      } else {
+        fontSize = constrain(width * 0.040, 28, 50);
+      }
     }
 
-    // 2. Separación explícita entre letras (letter-spacing / tracking) para evitar solapes
-    let letterSpacing = max(4.2, fontSize * 0.082);
+    // Separación explícita entre letras (letter-spacing / tracking) para evitar solapes
+    let letterSpacing = max(hasPhoto ? 3.5 : 4.2, fontSize * (hasPhoto ? 0.078 : 0.082));
 
     pg.textSize(fontSize);
     pg.textStyle(BOLD);
     pg.textFont('Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
 
-    // 3. Trazo engrosado y definido para dar masa y nitidez a los glifos
+    // Trazo engrosado y definido para dar masa y nitidez a los glifos
     pg.fill(255, 255, 255, 255);
     pg.stroke(255, 255, 255, 255);
-    pg.strokeWeight(max(2.6, fontSize * 0.076));
+    pg.strokeWeight(max(2.2, fontSize * 0.074));
 
-    // 4. Salto de línea adaptativo con espaciado
-    let maxTextWidth = width * 0.82;
+    // Salto de línea adaptativo con espaciado
     let lines = this.wrapTextWithSpacing(pg, textString, maxTextWidth, letterSpacing);
     let lineHeight = fontSize * 1.34;
     let totalHeight = lines.length * lineHeight;
 
-    // Centrado vertical seguro (sin invadir la barra superior ni el footer)
-    let startY = max(height * 0.22, height * 0.40 - totalHeight / 2);
-
-    for (let i = 0; i < lines.length; i++) {
-      this.drawSpacedLine(pg, lines[i], width / 2, startY + i * lineHeight, letterSpacing);
+    // Centrado vertical coordinado
+    if (hasPhoto) {
+      startY = max(height * 0.20, height * 0.46 - totalHeight / 2);
+    } else {
+      startY = max(height * 0.22, height * 0.40 - totalHeight / 2);
     }
 
-    // Guardar layout para renderizar la sombra de las letras mientras la escultura vive
+    for (let i = 0; i < lines.length; i++) {
+      this.drawSpacedLine(pg, lines[i], centerX, startY + i * lineHeight, letterSpacing);
+    }
+
+    // Guardar layout para la huella residual de partículas y la nube viva
     this.lastTextLayout = {
       lines: lines,
       fontSize: fontSize,
       letterSpacing: letterSpacing,
       lineHeight: lineHeight,
       totalHeight: totalHeight,
-      startX: width / 2,
+      startX: centerX,
       startY: startY,
-      maxWidth: maxTextWidth
+      maxWidth: maxTextWidth,
+      hasPhoto: hasPhoto
     };
 
     return this.extractPoints(pg, desiredCount, startY - 10, startY + totalHeight + 15);

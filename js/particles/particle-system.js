@@ -297,7 +297,7 @@ class ParticleSystem {
 
   update() {
     for (let i = 0; i < this.particles.length; i++) {
-      this.particles[i].update(this.currentPhase, this.textBounds);
+      this.particles[i].update(this.currentPhase, this.textBounds, this.isRetracted);
     }
   }
 

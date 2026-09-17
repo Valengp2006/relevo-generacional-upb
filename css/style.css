@@ -450,6 +450,56 @@ canvas {
   margin-top: 4px;
 }
 
+/* Modo Apresentação (Limpeza visual para palestras e conferências) */
+#ui-overlay.presentation-mode .hud-center-group {
+  display: none !important;
+}
+
+#ui-overlay.presentation-mode .keyboard-hint {
+  display: none !important;
+}
+
+.btn-exit-pres {
+  display: none;
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  color: var(--text-main);
+  font-size: 12px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#ui-overlay.presentation-mode .btn-exit-pres {
+  display: inline-flex;
+  opacity: 0.75;
+}
+
+#ui-overlay.presentation-mode .btn-exit-pres:hover {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.04);
+}
+
+#ui-overlay.presentation-mode .nav-controls {
+  display: flex !important;
+  opacity: 0.95;
+  transition: opacity 0.3s ease;
+}
+
+#ui-overlay.presentation-mode .btn-nav {
+  box-shadow: 0 4px 24px rgba(0, 180, 216, 0.35);
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   #ui-overlay {

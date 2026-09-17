@@ -17,6 +17,7 @@ let currentSlideIndex = 0;
 let currentMode = CONFIG.modes.TEXT;
 let currentLang = CONFIG.defaultLanguage || 'pt';
 let slidePhaseTimer = 0.0;
+let isPresentationMode = false;
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight);
@@ -140,7 +141,7 @@ function applyState(isSlideChange = false) {
 
   // 4. Muestreo de objetivos para las partículas (Texto, Nube y Escultura)
   let headline = slide.title[currentLang] || slide.title['pt'];
-  let textTargets = sampler.sampleText(headline, CONFIG.particles.count);
+  let textTargets = sampler.sampleText(headline, CONFIG.particles.count, slide.hasPhoto);
   let cloudTargets = sampler.sampleCloud(sampler.lastTextLayout, CONFIG.particles.count);
 
   let sType = slide.sculptureType || 'nucleo';
@@ -156,9 +157,10 @@ function applyState(isSlideChange = false) {
   if (sampler && sampler.lastTextLayout) {
     let layout = sampler.lastTextLayout;
     let textW = layout.maxWidth || (width * 0.82);
+    let cx = layout.startX || width / 2;
     textBounds = {
-      left: width / 2 - textW / 2,
-      right: width / 2 + textW / 2,
+      left: cx - textW / 2,
+      right: cx + textW / 2,
       top: layout.startY - 15,
       bottom: layout.startY + layout.totalHeight + 15,
       width: textW,
@@ -277,6 +279,23 @@ function toggleFullscreen() {
 }
 
 /**
+ * Alterna el Modo Apresentação: oculta todos los controles de la interfaz
+ * excepto las teclas para cambiar de diapositiva.
+ */
+function togglePresentationMode(forceState) {
+  if (forceState !== undefined) {
+    isPresentationMode = forceState;
+  } else {
+    isPresentationMode = !isPresentationMode;
+  }
+
+  let overlay = document.getElementById('ui-overlay');
+  if (overlay) {
+    overlay.classList.toggle('presentation-mode', isPresentationMode);
+  }
+}
+
+/**
  * Configuración de Listeners de Teclado, Clic y Táctil
  */
 function initKeyboardAndUIListeners() {
@@ -290,6 +309,14 @@ function initKeyboardAndUIListeners() {
     } else if (e.key === 't' || e.key === 'T') {
       e.preventDefault();
       toggleMode();
+    } else if (e.key === 'p' || e.key === 'P') {
+      e.preventDefault();
+      togglePresentationMode();
+    } else if (e.key === 'Escape') {
+      if (isPresentationMode) {
+        e.preventDefault();
+        togglePresentationMode(false);
+      }
     } else if (e.key === 'l' || e.key === 'L') {
       e.preventDefault();
       cycleLanguage();
@@ -304,11 +331,15 @@ function initKeyboardAndUIListeners() {
   let nextBtn = document.getElementById('btn-next');
   let toggleBtn = document.getElementById('btn-toggle-mode');
   let fullBtn = document.getElementById('btn-fullscreen');
+  let presBtn = document.getElementById('btn-presentation-mode');
+  let exitPresBtn = document.getElementById('btn-exit-presentation');
 
   if (prevBtn) prevBtn.addEventListener('click', prevSlide);
   if (nextBtn) nextBtn.addEventListener('click', nextSlide);
   if (toggleBtn) toggleBtn.addEventListener('click', toggleMode);
   if (fullBtn) fullBtn.addEventListener('click', toggleFullscreen);
+  if (presBtn) presBtn.addEventListener('click', () => togglePresentationMode());
+  if (exitPresBtn) exitPresBtn.addEventListener('click', () => togglePresentationMode(false));
 
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {

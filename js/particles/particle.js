@@ -98,7 +98,7 @@ class Particle {
     this.applyForce(steer);
   }
 
-  update(phaseName = 'TEXT_FORMED', textBounds = null) {
+  update(phaseName = 'TEXT_FORMED', textBounds = null, hasPhoto = false) {
     let isCloud = (phaseName === 'TEXT_CLOUD');
     let isOrganizing = (phaseName === 'TEXT_ORGANIZING');
     let isTextFormed = (phaseName === 'TEXT_FORMED');
@@ -183,6 +183,26 @@ class Particle {
       this.applyForce(createVector(0, 0.45));
     }
 
+    // 7b. Protección física contra invasión del área fotográfica documental (cuadrante derecho)
+    let insidePhoto = false;
+    if (hasPhoto) {
+      let cardW = min(460, width * 0.44);
+      let cardH = 360;
+      let cardLeft = width * 0.95 - cardW - 25;
+      let cardRight = width * 0.95 + 25;
+      let cardTop = height * 0.5 - cardH * 0.5 - 25;
+      let cardBottom = height * 0.5 + cardH * 0.5 + 25;
+
+      if (
+        this.pos.x >= cardLeft && this.pos.x <= cardRight &&
+        this.pos.y >= cardTop && this.pos.y <= cardBottom
+      ) {
+        insidePhoto = true;
+        let pushX = map(this.pos.x, cardLeft, cardRight, -0.65, -0.25);
+        this.applyForce(createVector(pushX, 0));
+      }
+    }
+
     // 8. Integración física
     this.vel.add(this.acc);
     let maxSpd = isCloud ? (CONFIG.particles.maxSpeed * 1.25) : CONFIG.particles.maxSpeed;
@@ -197,7 +217,7 @@ class Particle {
     this.b = lerp(this.b, this.targetB, 0.035);
 
     // 10. Suavizado de opacidad y escala
-    let effAlpha = insideText ? (this.targetAlpha * 0.32) : this.targetAlpha;
+    let effAlpha = insideText ? (this.targetAlpha * 0.32) : (insidePhoto ? (this.targetAlpha * 0.12) : this.targetAlpha);
     this.alpha = lerp(this.alpha, effAlpha, 0.08);
     this.scale = lerp(this.scale, this.targetScale, 0.08);
   }
