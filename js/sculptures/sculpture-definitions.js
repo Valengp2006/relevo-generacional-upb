@@ -8,8 +8,9 @@ const SCULPTURES = {
   // SLIDE 1: Potencial Contenido (Masa compacta respirando)
   potencial: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.5;
-    let cy = h * 0.45;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
     let rBase = min(w, h) * 0.12; 
 
     for (let i = 0; i < count; i++) {
@@ -35,10 +36,11 @@ const SCULPTURES = {
   // SLIDE 2: Auditorio (Estructura rígida)
   auditorio: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.5;
-    let cy = h * 0.5;
-    let widthArch = w * 0.5;
-    let heightArch = h * 0.35;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
+    let widthArch = w * 0.5 * scl;
+    let heightArch = h * 0.35 * scl;
 
     let totalGraderias = floor(count * 0.85);
     let totalEscenario = count - totalGraderias;
@@ -46,7 +48,7 @@ const SCULPTURES = {
     for (let i = 0; i < totalGraderias; i++) {
       let layer = floor(random(1, 8)); // 7 niveles de gradería
       let angle = map(random(1), 0, 1, PI * 0.9, PI * 2.1); 
-      let r = map(layer, 1, 7, widthArch * 0.3, widthArch);
+      let r = map(layer, 1, 7, widthArch * 0.3 * scl, widthArch);
       
       // Añadir ligero ruido para que parezcan asientos ocupados
       pts.push({
@@ -61,8 +63,8 @@ const SCULPTURES = {
       let nx = random(-1, 1);
       let ny = random(-1, 1);
       pts.push({
-        x: cx + nx * (widthArch * 0.15),
-        y: cy + heightArch * 0.4 + ny * (heightArch * 0.1),
+        x: cx + nx * (widthArch * 0.15 * scl),
+        y: cy + heightArch * 0.4 * scl + ny * (heightArch * 0.1 * scl),
         species: 'B',
         clusterId: 3
       });
@@ -73,15 +75,16 @@ const SCULPTURES = {
   // SLIDE 3: Apertura (El auditorio se abre y expande hacia el mundo)
   apertura: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.65; // Desplazado a la derecha por layout-tension
-    let cy = h * 0.5;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
     
     let coreCount = floor(count * 0.25);
     let flowCount = floor(count * 0.35);
     let regionCount = count - coreCount - flowCount;
 
     // 1. Núcleo Universitario (Compacto pero rompiéndose)
-    let coreR = w * 0.08;
+    let coreR = w * 0.08 * scl;
     for (let i = 0; i < coreCount; i++) {
       let r = random(coreR);
       let a = random(TWO_PI);
@@ -90,14 +93,14 @@ const SCULPTURES = {
 
     // Tres direcciones
     let angles = [PI + 0.35, PI - 0.35, HALF_PI - 0.2];
-    let maxDist = w * 0.30;
+    let maxDist = w * 0.30 * scl;
 
     // 2. Corrientes de partículas (Filamentos en expansión)
     for (let i = 0; i < flowCount; i++) {
       let branch = i % 3;
       let progress = random(1);
       // Las corrientes ondulan ligeramente
-      let wave = sin(progress * 10 + branch) * (w * 0.02);
+      let wave = sin(progress * 10 + branch) * (w * 0.02 * scl);
       let angle = angles[branch];
       let dist = progress * maxDist;
       
@@ -113,7 +116,7 @@ const SCULPTURES = {
       let centerRX = cx + cos(angle) * maxDist;
       let centerRY = cy + sin(angle) * maxDist;
       
-      let r = random(w * 0.12);
+      let r = random(w * 0.12 * scl);
       let a = random(TWO_PI);
       
       pts.push({ 
@@ -130,9 +133,10 @@ const SCULPTURES = {
   // SLIDE 4: Triada (Tres familias distintas)
   triada: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.65;
-    let cy = h * 0.5;
-    let spacing = w * 0.18;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
+    let spacing = w * 0.18 * scl;
 
     let centers = [
       { x: cx, y: cy - spacing * 0.8 },      // Academia (Arriba)
@@ -177,9 +181,10 @@ const SCULPTURES = {
     // SLIDE 5: Onda de Impacto (Uno afecta a los otros)
   impacto: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.65;
-    let cy = h * 0.5;
-    let spacing = w * 0.18;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
+    let spacing = w * 0.18 * scl;
 
     let centers = [
       { x: cx, y: cy - spacing * 0.8, cid: 1 },       // Arriba
@@ -256,8 +261,9 @@ const SCULPTURES = {
   // SLIDE 6: Comunidad (Filamentos)
   comunidad: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.5;
-    let cy = h * 0.6;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
     let r = min(w, h) * 0.35;
 
     for (let i = 0; i < count; i++) {
@@ -273,8 +279,9 @@ const SCULPTURES = {
   // SLIDE 7: Atracción (Talento externo)
   atraccion: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.5;
-    let cy = h * 0.6;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
     let r = min(w, h) * 0.25;
 
     let coreCount = floor(count * 0.7);
@@ -305,15 +312,16 @@ const SCULPTURES = {
   // SLIDE 8: Exploración (Nuevas rutas)
   exploracion: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.65;
-    let cy = h * 0.5;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
     
     let coreCount = floor(count * 0.5);
     let explorerCount = count - coreCount;
 
     // Núcleo
     for (let i = 0; i < coreCount; i++) {
-      let r = random(w * 0.15);
+      let r = random(w * 0.15 * scl);
       let a = random(TWO_PI);
       pts.push({ x: cx + cos(a)*r, y: cy + sin(a)*r, species: 'A', clusterId: 1 });
     }
@@ -324,7 +332,7 @@ const SCULPTURES = {
       let route = i % routes;
       let baseAngle = (route / routes) * TWO_PI;
       let progress = random(1);
-      let length = w * 0.35;
+      let length = w * 0.35 * scl;
       
       let pathWander = sin(progress * 10 + route) * 30;
       
@@ -339,8 +347,9 @@ const SCULPTURES = {
   // SLIDE 9: Dos Visiones
   visiones: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.65;
-    let cy = h * 0.5;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
     
     for (let i = 0; i < count; i++) {
       let isOld = i % 2 === 0;
@@ -348,11 +357,11 @@ const SCULPTURES = {
       
       if (isOld) {
         // Generación anterior: Anclada, densa, cerca del centro
-        let r = pow(random(1), 2) * (w * 0.18);
+        let r = pow(random(1), 2) * (w * 0.18 * scl);
         pts.push({ x: cx + cos(angle)*r, y: cy + sin(angle)*r, species: 'A', clusterId: 1 });
       } else {
         // Nueva generación: Fluida, explorando el perímetro externo pero orientada al centro
-        let r = (w * 0.15) + random(w * 0.15);
+        let r = (w * 0.15 * scl) + random(w * 0.15 * scl);
         pts.push({ x: cx + cos(angle)*r, y: cy + sin(angle)*r, species: 'B', clusterId: 2 });
       }
     }
@@ -362,9 +371,10 @@ const SCULPTURES = {
   // SLIDE 10: Interpenetración (Trabajo Conjunto)
   interpenetracion: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.65;
-    let cy = h * 0.5;
-    let maxR = w * 0.22;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
+    let maxR = w * 0.22 * scl;
 
     for (let i = 0; i < count; i++) {
       let isOld = i % 2 === 0;
@@ -387,10 +397,11 @@ const SCULPTURES = {
   // SLIDE 11: Periferia
   periferia: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.5;
-    let cy = h * 0.6;
-    let coreR = w * 0.15;
-    let outerR = w * 0.35;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
+    let coreR = w * 0.15 * scl;
+    let outerR = w * 0.35 * scl;
 
     for (let i = 0; i < count; i++) {
       let isOld = i % 2 === 0;
@@ -413,8 +424,9 @@ const SCULPTURES = {
   // SLIDE 12: Construcción (Entrelazado)
   construccion: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.65;
-    let cy = h * 0.5;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
     
     // Una espiral de doble hélice o un tejido de grilla isométrica
     let strands = 8;
@@ -424,7 +436,7 @@ const SCULPTURES = {
       let progress = random(1);
       
       let baseAngle = (strand / strands) * TWO_PI;
-      let radius = w * 0.25 * progress;
+      let radius = w * 0.25 * scl * progress;
       
       // Hélice
       let twist = isOld ? (progress * TWO_PI) : (-progress * TWO_PI);
@@ -443,8 +455,9 @@ const SCULPTURES = {
   // SLIDE 13: Portal Unificado
   portal: function(count, w, h, options = {}) {
     let pts = [];
-    let cx = w * 0.5;
-    let cy = h * 0.5;
+    let cx = options.centerX || w * 0.5;
+    let cy = options.centerY || h * 0.53;
+    let scl = options.radiusScale || 1.0;
     let r = min(w, h) * 0.45;
 
     // Torus / Portal de partículas interconectadas

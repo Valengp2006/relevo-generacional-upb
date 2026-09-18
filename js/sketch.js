@@ -142,13 +142,25 @@ function applyState(isSlideChange = false) {
     }
   }
   
-  // Mostrar u ocultar el botón de Instagram
-  let btnInsta = document.getElementById('btn-instagram');
-  if (btnInsta) {
-    if (slide.id === 1 || slide.id === 13) {
-      btnInsta.style.display = 'block';
+  // Mostrar u ocultar el CTA Final (QR + Instagram)
+  let ctaContainer = document.getElementById('final-cta-container');
+  let qrCode = document.querySelector('.qr-code');
+  if (ctaContainer && qrCode) {
+    if (slide.id === 1) {
+      ctaContainer.style.display = 'flex';
+      qrCode.style.display = 'none';
+      setTimeout(() => ctaContainer.classList.add('visible'), 50);
+    } else if (slide.id === 13) {
+      ctaContainer.style.display = 'flex';
+      qrCode.style.display = 'block';
+      setTimeout(() => ctaContainer.classList.add('visible'), 50);
     } else {
-      btnInsta.style.display = 'none';
+      ctaContainer.classList.remove('visible');
+      setTimeout(() => {
+        if (![1, 13].includes(SLIDES_DATA[currentSlideIndex].id)) {
+          ctaContainer.style.display = 'none';
+        }
+      }, 800);
     }
   }
   domTextVisible = false;
@@ -196,6 +208,11 @@ function applyState(isSlideChange = false) {
   let generator = SCULPTURES[sType] || SCULPTURES['potencial'];
   let opts = {};
   if (slide.edgeProgress !== undefined) opts.edgeProgress = slide.edgeProgress;
+  opts.hasPhoto = slide.hasPhoto;
+  opts.centerX = slide.hasPhoto ? width * 0.275 : width * 0.5;
+  opts.centerY = height * 0.52;
+  opts.radiusScale = slide.hasPhoto ? 0.65 : 0.85;
+  
   let sculptureTargets = generator(CONFIG.particles.count, width, height, opts);
 
   let textBounds = null;
