@@ -207,7 +207,7 @@ class ParticleSystem {
     if (this.isRetracted) {
       sculptureAlpha = 215;
       scaleFactor = 0.78;
-      offsetX = -width * 0.16;
+      offsetX = -width * 0.23;
     }
 
     for (let i = 0; i < this.particles.length; i++) {
