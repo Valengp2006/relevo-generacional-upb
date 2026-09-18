@@ -3,10 +3,15 @@
  * Arquitectura de Ecosistema Continuo:
  * - El titular nace como una nube de partículas orgánica (Fase A).
  * - Las partículas se organizan paulatinamente hacia los glifos de las letras (Fase B).
- * - Las letras se consolidan con máxima nitidez y respiración viva continua (Fase C/D).
+ * - Las letras se consolidan con máxima nitidez, SIN respiración y SIN líneas de
+ *   conexión, para que el borde tipográfico se lea limpio (Fase C/D).
  * - En modo Escultura (Tecla T): 1,440 partículas forman la escultura generativa y
  *   360 partículas forman la huella/sombra residual del texto, manteniendo legibilidad.
  * - Cero texto canvas 2D plano ni sombras CSS; 100% partículas vivas en todo el ciclo.
+ *
+ * AJUSTE: TEXT_FORMED ahora fija breathAmp en 0 (antes 1.8) y drawConnections()
+ * ya no dibuja ninguna línea en esa fase — las letras no necesitan red, solo masa
+ * sólida y quieta.
  */
 
 class ParticleSystem {
@@ -111,7 +116,9 @@ class ParticleSystem {
       for (let i = 0; i < this.particles.length; i++) {
         let p = this.particles[i];
         p.setIsHuella(false);
-        p.setBreathAmp(1.8);
+        // AJUSTE: 0 en vez de 1.8 — cero respiración en texto formado, para
+        // que el borde de las letras no tiemble ni un poco.
+        p.setBreathAmp(0);
         let tt = this.cachedTextTargets[i % totalText];
         p.setTarget(tt.x, tt.y);
         p.setTargetAlpha(245);
@@ -153,6 +160,11 @@ class ParticleSystem {
    * Distribución dual en Modo Escultura:
    * - 1,440 partículas viajan a componer la escultura generativa
    * - 360 partículas permanecen delineando la huella/sombra residual del texto
+   *
+   * NOTA: 360 puntos siguen siendo insuficientes para deletrear un titular
+   * completo con nitidez — eso se resuelve en target-sampler.js muestreando
+   * una versión desenfocada del texto para la huella (blur en el canvas oculto
+   * antes de leer píxeles), no aquí. Avísame cuando tengas ese archivo a mano.
    */
   applySculptureAndHuella() {
     if (!this.cachedSculptureTargets || this.cachedSculptureTargets.length === 0) return;
@@ -310,8 +322,9 @@ class ParticleSystem {
 
   /**
    * Conexiones de red continuas:
-   * - En modo TEXTO consolidado: conexión ultra-local (máx 7.0px) para no crear telarañas
-   *   entre caracteres y mantener los huecos tipográficos perfectos.
+   * - En modo TEXTO consolidado: SIN conexiones — cero líneas. Las letras se
+   *   componen solo de masa de puntos quietos; cualquier línea, por tenue que
+   *   sea, rellena los huecos tipográficos y difumina el borde.
    * - En Fase NUBE: red expansiva orgánica.
    * - En Fase ORGANIZACIÓN: red que converge hacia las letras.
    * - En modo ESCULTURA: red espacial amplia (40-48px) de acero y palabras estilo Plensa,
@@ -323,13 +336,12 @@ class ParticleSystem {
     let isTextFormed = (this.currentPhase === 'TEXT_FORMED');
     let isSculpture = (this.currentPhase === 'SCULPTURE_ACTIVE');
 
+    // AJUSTE: texto formado no dibuja ninguna conexión.
+    if (isTextFormed) return;
+
     let maxDist, edgeWeight, baseAlpha;
 
-    if (isTextFormed) {
-      maxDist = 7.0; // Estrictamente local: nunca cruza espacios entre letras
-      edgeWeight = 0.7;
-      baseAlpha = 0.08;
-    } else if (isCloud) {
+    if (isCloud) {
       maxDist = 32.0;
       edgeWeight = 0.9;
       baseAlpha = 0.16;
@@ -371,8 +383,8 @@ class ParticleSystem {
 
     // En escultura solo conectamos partículas de la escultura (< 1440) para mantener la huella limpia
     let endLimit = isSculpture ? 1440 : this.particles.length;
-    let step = isTextFormed ? 2 : (endLimit > 1200 ? 2 : 1);
-    let maxNeighbors = isTextFormed ? 2 : ((typeof CONFIG !== 'undefined' && CONFIG.particles) ? (CONFIG.particles.maxNeighbors || 3) : 3);
+    let step = (endLimit > 1200 ? 2 : 1);
+    let maxNeighbors = (typeof CONFIG !== 'undefined' && CONFIG.particles) ? (CONFIG.particles.maxNeighbors || 3) : 3;
 
     for (let i = 0; i < endLimit; i += step) {
       let pA = this.particles[i];
