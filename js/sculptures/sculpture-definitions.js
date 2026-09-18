@@ -184,75 +184,52 @@ const SCULPTURES = {
     let cx = options.centerX || w * 0.5;
     let cy = options.centerY || h * 0.53;
     let scl = options.radiusScale || 1.0;
-    let spacing = w * 0.18 * scl;
+    let spacing = w * 0.15 * scl; // Compacto para encuadre
 
-    let centers = [
-      { x: cx, y: cy - spacing * 0.8, cid: 1 },       // Arriba
-      { x: cx - spacing, y: cy + spacing * 0.4, cid: 2 }, // Izquierda (Origen del impacto)
-      { x: cx + spacing, y: cy + spacing * 0.4, cid: 3 }  // Derecha
-    ];
+    let n1 = { x: cx - spacing * 0.6, y: cy };
+    let n2 = { x: cx + spacing * 0.7, y: cy - spacing * 0.6 };
+    let n3 = { x: cx + spacing * 0.7, y: cy + spacing * 0.6 };
 
-    let origin = centers[1];
-    
-    let nodeCount = floor(count * 0.4); // 40% en los nodos estables
-    let streamCount = count - nodeCount; // 60% en los rayos de impacto
+    let countN1 = floor(count * 0.15);
+    let countN2 = floor(count * 0.15);
+    let countN3 = floor(count * 0.15);
+    let countWaves = count - countN1 - countN2 - countN3;
 
-    // 1. Dibujar los Nodos
-    for (let i = 0; i < nodeCount; i++) {
-      let clusterIndex = i % 3;
-      let center = centers[clusterIndex];
-      let r = spacing * 0.35 * random(1);
+    // Nodo 1 (Origen del impacto - Color Cyan)
+    let r1 = spacing * 0.25;
+    for (let i = 0; i < countN1; i++) {
+      let r = pow(random(1), 0.5) * r1;
       let a = random(TWO_PI);
-      
-      let x = center.x + cos(a) * r;
-      let y = center.y + sin(a) * r;
-
-      // Si no es el origen, deforma su forma por el impacto
-      if (clusterIndex !== 1) {
-        let dx = x - origin.x;
-        let dy = y - origin.y;
-        let dist = sqrt(dx*dx + dy*dy);
-        
-        // Empuje parabólico: las partículas más cercanas al origen salen volando más lejos
-        let pushForce = max(0, 100 - (dist * 0.15)) * random(0.5, 1.5); 
-        x += (dx / dist) * pushForce;
-        y += (dy / dist) * pushForce;
-      } else {
-        // El origen está denso e irradiando (pulso interno)
-        x += random(-15, 15);
-        y += random(-15, 15);
-      }
-
-      pts.push({ x: x, y: y, species: 'A', clusterId: center.cid });
+      pts.push({ x: n1.x + cos(a)*r, y: n1.y + sin(a)*r, species: 'A', clusterId: 2 });
     }
 
-    // 2. Corrientes de Impacto (Material viajando del Origen a los otros nodos)
-    let streamTargets = [centers[0], centers[2]];
-    for (let i = 0; i < streamCount; i++) {
-      let target = streamTargets[i % 2];
-      let progress = random(1);
-      
-      // Interpolación lineal desde el origen hacia el objetivo
-      let x = lerp(origin.x, target.x, progress);
-      let y = lerp(origin.y, target.y, progress);
-      
-      // Vector perpendicular para el ruido
-      let dx = target.x - origin.x;
-      let dy = target.y - origin.y;
-      let dist = sqrt(dx*dx + dy*dy);
-      let perpX = -dy / dist;
-      let perpY = dx / dist;
+    // Ondas expansivas (Color Cyan) simulando el impacto viajando
+    let numWaves = 6;
+    let waveParticles = floor(countWaves / numWaves);
+    for (let wIdx = 1; wIdx <= numWaves; wIdx++) {
+      let baseR = map(wIdx, 1, numWaves, spacing * 0.4, spacing * 1.8);
+      for (let i = 0; i < waveParticles; i++) {
+        // Ondas que viajan hacia la derecha
+        let a = random(-PI * 0.45, PI * 0.45);
+        let r = baseR + random(-spacing * 0.04, spacing * 0.04);
+        pts.push({ x: n1.x + cos(a)*r, y: n1.y + sin(a)*r, species: 'B', clusterId: 2 });
+      }
+    }
 
-      // Las corrientes son precisas al inicio, y turbulentas/explosivas al impactar
-      let turbulence = pow(progress, 2) * 80; 
-      let wave = sin(progress * 20 + i) * (20 + turbulence * 0.5);
+    // Nodo 2 (Arriba - Recibiendo impacto - Color Magenta)
+    let r2 = spacing * 0.35;
+    for (let i = 0; i < countN2; i++) {
+      let r = pow(random(1), 0.5) * r2;
+      let a = random(TWO_PI);
+      pts.push({ x: n2.x + cos(a)*r, y: n2.y + sin(a)*r, species: 'A', clusterId: 1 });
+    }
 
-      x += perpX * wave + random(-turbulence, turbulence);
-      y += perpY * wave + random(-turbulence, turbulence);
-
-      // MUY IMPORTANTE: El material de la corriente hereda la identidad del origen (cid: 2)
-      // Así el color de origen literalmente invade visualmente a los otros dos.
-      pts.push({ x: x, y: y, species: 'A', clusterId: 2 });
+    // Nodo 3 (Abajo - Recibiendo impacto - Color Verde/Teal)
+    let r3 = spacing * 0.35;
+    for (let i = 0; i < countN3; i++) {
+      let r = pow(random(1), 0.5) * r3;
+      let a = random(TWO_PI);
+      pts.push({ x: n3.x + cos(a)*r, y: n3.y + sin(a)*r, species: 'A', clusterId: 3 });
     }
 
     return pts;
