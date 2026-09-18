@@ -133,6 +133,13 @@ function applyState(isSlideChange = false) {
   if (huellaCaptionEl) {
     huellaCaptionEl.textContent = headline;
     huellaCaptionEl.classList.remove('visible');
+    if (slide.hasPhoto) {
+      huellaCaptionEl.style.left = '27%';
+      huellaCaptionEl.style.maxWidth = '42vw';
+    } else {
+      huellaCaptionEl.style.left = '50%';
+      huellaCaptionEl.style.maxWidth = '70vw';
+    }
   }
   domTextVisible = false;
 
