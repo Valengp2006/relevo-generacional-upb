@@ -138,7 +138,7 @@ class TargetSampler {
       maxTextWidth = width * 0.82;
       centerX = width / 2;
       if (len <= 25) {
-        fontSize = constrain(width * 0.065, 46, 78);
+        fontSize = constrain(width * 0.065, 46, 64);
       } else if (len <= 52) {
         fontSize = constrain(width * 0.050, 36, 62);
       } else {
@@ -208,26 +208,35 @@ class TargetSampler {
     let pg = this.offscreen;
     pg.clear();
 
-    let layout = this.computeLayout(pg, textString, hasPhoto);
-    let blur = blurPx !== null ? blurPx : constrain(layout.fontSize * 0.16, 6, 14);
+    let bandCenterY = height * 0.86;
+    let maxTextWidth = hasPhoto ? width * 0.42 : width * 0.62;
+    let centerX = hasPhoto ? width * 0.27 : width / 2;
+
+    let fontSize = constrain(width * 0.022, 14, 22);
+    pg.textSize(fontSize);
+    pg.textStyle(BOLD);
+    pg.textFont('Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
+
+    let letterSpacing = max(2.2, fontSize * 0.06);
+    let lines = this.wrapTextWithSpacing(pg, textString, maxTextWidth, letterSpacing);
+    if (lines.length > 2) lines = lines.slice(0, 2);
+
+    let lineHeight = fontSize * 1.3;
+    let totalHeight = lines.length * lineHeight;
+    let startY = bandCenterY - totalHeight / 2;
+    let blur = blurPx !== null ? blurPx : constrain(fontSize * 0.22, 4, 9);
 
     pg.fill(255, 255, 255, 255);
     pg.noStroke();
-
     pg.drawingContext.save();
     pg.drawingContext.filter = `blur(${blur}px)`;
-
-    for (let i = 0; i < layout.lines.length; i++) {
-      this.drawSpacedLine(pg, layout.lines[i], layout.startX, layout.startY + i * layout.lineHeight, layout.letterSpacing);
+    for (let i = 0; i < lines.length; i++) {
+      this.drawSpacedLine(pg, lines[i], centerX, startY + i * lineHeight, letterSpacing);
     }
-
     pg.drawingContext.filter = 'none';
     pg.drawingContext.restore();
 
-    // Umbral bajo (40 en vez de 128): el blur reparte la opacidad en un halo amplio
-    // de alpha medio/bajo — con el umbral normal capturaríamos solo el núcleo y
-    // perderíamos justo la difusión que buscamos.
-    return this.extractPoints(pg, desiredCount, layout.startY - blur * 2, layout.startY + layout.totalHeight + blur * 2, 40);
+    return this.extractPoints(pg, desiredCount, startY - blur * 2, startY + totalHeight + blur * 2, 40);
   }
 
   /**
@@ -347,6 +356,7 @@ class TargetSampler {
 
     let ratio = activeCandidates / desiredCount;
     let sampleStep = max(2, round(checkStep * sqrt(max(0.18, ratio))));
+    sampleStep = constrain(sampleStep, 2, 4); // Nunca adelgazar tanto que las letras queden punteadas
 
     let points = [];
     for (let y = yStart; y < yEnd; y += sampleStep) {

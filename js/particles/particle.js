@@ -130,8 +130,8 @@ class Particle {
     //     superposición. Ahora la partícula simplemente persigue un punto que ya
     //     está fuera de la zona de la tarjeta.
     if (hasPhoto) {
-      let cardW = min(460, width * 0.44);
-      let cardH = 360;
+      let cardW = min(560, width * 0.50);
+      let cardH = 460;
       let cardLeft = width * 0.95 - cardW - 25;
       let cardRight = width * 0.95 + 25;
       let cardTop = height * 0.5 - cardH * 0.5 - 25;
@@ -221,8 +221,8 @@ class Particle {
     //     fuerza; se mantiene solo como bandera para la opacidad del paso 10.
     let insidePhoto = false;
     if (hasPhoto) {
-      let cardW = min(460, width * 0.44);
-      let cardH = 360;
+      let cardW = min(560, width * 0.50);
+      let cardH = 460;
       let cardLeft = width * 0.95 - cardW - 25;
       let cardRight = width * 0.95 + 25;
       let cardTop = height * 0.5 - cardH * 0.5 - 25;
@@ -261,7 +261,7 @@ class Particle {
     if (this.isHuella) {
       r = this.radius * 0.82;
     } else if (phaseName === 'TEXT_FORMED') {
-      r = this.radius * 1.15; // Realce de grosor para formar letras continuas y sólidas
+      r = this.radius * 1.6; // puntos vecinos se funden en trazo sólido
     }
     r *= this.scale;
     ellipse(this.pos.x, this.pos.y, r * 2, r * 2);

@@ -151,6 +151,7 @@ function applyState(isSlideChange = false) {
     opts.edgeProgress = slide.edgeProgress;
   }
   let sculptureTargets = generator(CONFIG.particles.count, width, height, opts);
+  let huellaTargets = sampler.sampleTextForHuella(headline, 360, slide.hasPhoto);
 
   // 5. Límites de la huella del texto para la Zona de Calma en escultura
   let textBounds = null;
@@ -172,6 +173,7 @@ function applyState(isSlideChange = false) {
     textTargets: textTargets,
     cloudTargets: cloudTargets,
     sculptureTargets: sculptureTargets,
+    huellaTargets: huellaTargets,
     act: slide.act,
     hasPhoto: slide.hasPhoto,
     sculptureType: sType,

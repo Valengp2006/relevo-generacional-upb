@@ -28,6 +28,7 @@ class ParticleSystem {
     this.cachedTextTargets = [];
     this.cachedCloudTargets = [];
     this.cachedSculptureTargets = [];
+    this.cachedHuellaTargets = [];
 
     // Inicializar pool continuo de 1,800 partículas
     for (let i = 0; i < this.count; i++) {
@@ -51,6 +52,7 @@ class ParticleSystem {
     if (data.textTargets) this.cachedTextTargets = data.textTargets;
     if (data.cloudTargets) this.cachedCloudTargets = data.cloudTargets;
     if (data.sculptureTargets) this.cachedSculptureTargets = data.sculptureTargets;
+    if (data.huellaTargets) this.cachedHuellaTargets = data.huellaTargets;
     if (data.act !== undefined) this.currentAct = data.act;
     if (data.hasPhoto !== undefined) this.isRetracted = data.hasPhoto;
     if (data.sculptureType) this.currentSculptureType = data.sculptureType;
@@ -169,7 +171,8 @@ class ParticleSystem {
   applySculptureAndHuella() {
     if (!this.cachedSculptureTargets || this.cachedSculptureTargets.length === 0) return;
     let totalSculpture = this.cachedSculptureTargets.length;
-    let totalText = (this.cachedTextTargets && this.cachedTextTargets.length > 0) ? this.cachedTextTargets.length : 1;
+    let huellaSource = (this.cachedHuellaTargets && this.cachedHuellaTargets.length > 0) ? this.cachedHuellaTargets : this.cachedTextTargets;
+    let totalHuella = (huellaSource && huellaSource.length > 0) ? huellaSource.length : 1;
 
     let sculptureCount = 1440;
     let huellaCount = this.particles.length - sculptureCount; // 360
@@ -267,8 +270,8 @@ class ParticleSystem {
       let pIdx = sculptureCount + j;
       let p = this.particles[pIdx];
 
-      let textIdx = Math.floor(j * (totalText / huellaCount));
-      let tTarget = this.cachedTextTargets[textIdx % totalText];
+      let textIdx = Math.floor(j * (totalHuella / huellaCount));
+      let tTarget = huellaSource[textIdx % totalHuella];
 
       p.setIsHuella(true);
       p.setTarget(tTarget.x, tTarget.y);
