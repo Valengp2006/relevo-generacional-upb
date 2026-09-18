@@ -154,8 +154,8 @@ class TargetSampler {
     let fontSize, maxTextWidth, centerX;
 
     if (hasPhoto) {
-      maxTextWidth = min(width * 0.32, 500);
-      centerX = width * 0.48;
+      maxTextWidth = min(width * 0.28, 480);
+      centerX = width * 0.43;
       if (len <= 25) {
         fontSize = constrain(width * 0.048, 34, 54);
       } else if (len <= 52) {
@@ -239,8 +239,8 @@ class TargetSampler {
     pg.clear();
 
     let bandCenterY = height * 0.86;
-    let maxTextWidth = hasPhoto ? width * 0.32 : width * 0.62;
-    let centerX = hasPhoto ? width * 0.48 : width / 2;
+    let maxTextWidth = hasPhoto ? width * 0.28 : width * 0.62;
+    let centerX = hasPhoto ? width * 0.43 : width / 2;
 
     let fontSize = constrain(width * 0.022, 14, 22);
     pg.textSize(fontSize);
