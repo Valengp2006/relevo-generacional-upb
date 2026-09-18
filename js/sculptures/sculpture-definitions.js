@@ -1,617 +1,406 @@
 /**
- * Definiciones de Esculturas Generativas — Relevo Generacional (Iteración 2)
- * Secuencia narrativa continua en 13 etapas:
- * nucleo -> auditorio -> triada -> irradiar -> comunidad -> comunidad-tejida
- * -> vision -> especies -> entretejido -> portal
- * 
- * Cada generador produce un conjunto de 1,800 coordenadas objetivo {x, y, species}
- * diseñadas como transformaciones sucesivas de una sola materia continua.
+ * Diccionario Matemático de Esculturas Generativas
+ * Iteración 3 — Ecosistema Continuo de Partículas (Narrativa de 13 Actos)
  */
 
 const SCULPTURES = {
-  /**
-   * SLIDE 1: nucleo
-   * Una sola esfera muy densa, casi sin espacio negativo.
-   * Representa potencial latente. Movimiento mínimo, como una respiración contenida.
-   */
-  nucleo: function(count, w, h, opts = {}) {
+  
+  // SLIDE 1: Potencial Contenido (Masa compacta respirando)
+  potencial: function(count, w, h, options = {}) {
     let pts = [];
-    let s = min(w, h);
-    // Posición desplazada sutilmente al centro-derecha para equilibrar el titular editorial
-    let cx = w * 0.55;
-    let cy = h * 0.50;
-    let baseR = s * 0.24;
+    let cx = w * 0.5;
+    let cy = h * 0.45;
+    let rBase = min(w, h) * 0.12; 
 
     for (let i = 0; i < count; i++) {
-      let phi = acos(random(-1, 1));
-      let theta = random(TWO_PI);
-      // Distribución densa hacia el núcleo con caída volumétrica
-      let rNorm = pow(random(1), 1.8);
-      let r = baseR * (0.15 + 0.85 * rNorm);
-
-      let x = cx + r * sin(phi) * cos(theta);
-      let y = cy + r * sin(phi) * sin(theta) * 0.82;
+      let rNorm = pow(random(1), 0.5); // Distribución uniforme en círculo
+      let angle = random(TWO_PI);
+      let r = rBase * rNorm;
+      
+      // La masa parece constreñida
+      if (r > rBase * 0.8) {
+        r += sin(angle * 6) * (rBase * 0.15); // "Intentos" de expansión en los bordes
+      }
 
       pts.push({
-        x: x,
-        y: y,
+        x: cx + cos(angle) * r,
+        y: cy + sin(angle) * r,
         species: 'A',
-        clusterId: 0
+        clusterId: 1
       });
     }
     return pts;
   },
 
-  /**
-   * SLIDE 2: auditorio
-   * El mismo volumen del núcleo se aplana y reorganiza en filas tipo graderío institucional.
-   * Rígido, ordenado y estructurado.
-   */
-  auditorio: function(count, w, h, opts = {}) {
+  // SLIDE 2: Auditorio (Estructura rígida)
+  auditorio: function(count, w, h, options = {}) {
     let pts = [];
-    let s = min(w, h);
-    let cx = w * 0.52;
-    let cy = h * 0.42;
+    let cx = w * 0.5;
+    let cy = h * 0.5;
+    let widthArch = w * 0.5;
+    let heightArch = h * 0.35;
 
-    let numRows = 7;
-    let pointsPerRow = floor(count / numRows);
-    let minRadius = s * 0.16;
-    let maxRadius = s * 0.46;
+    let totalGraderias = floor(count * 0.85);
+    let totalEscenario = count - totalGraderias;
 
-    let idx = 0;
-    for (let r = 0; r < numRows; r++) {
-      let rowRadius = map(r, 0, numRows - 1, minRadius, maxRadius);
-      let rowCount = (r === numRows - 1) ? (count - idx) : pointsPerRow;
-      // Arcos concéntricos descendentes tipo anfiteatro
-      let startAngle = PI * 0.20;
-      let endAngle = PI * 0.80;
-
-      for (let j = 0; j < rowCount; j++) {
-        let t = j / (rowCount - 1);
-        let ang = lerp(startAngle, endAngle, t);
-        let jitterR = (sin(j * 8) * 0.02) * rowRadius;
-
-        let x = cx + cos(ang) * (rowRadius + jitterR);
-        let y = cy + sin(ang) * (rowRadius * 0.72 + jitterR);
-
-        pts.push({
-          x: x,
-          y: y,
-          species: 'A',
-          clusterId: 0
-        });
-        idx++;
-      }
-    }
-    return pts;
-  },
-
-  /**
-   * SLIDE 3 & 4: triada
-   * Las filas del auditorio se rompen y redistribuyen en 3 núcleos equiláteros de igual peso visual
-   * (Academia, Industria, Ciudad), sin jerarquía.
-   */
-  triada: function(count, w, h, opts = {}) {
-    let pts = [];
-    let s = min(w, h);
-    let cx = w * 0.52;
-    let cy = h * 0.52;
-    let spread = s * 0.28;
-    let clusterR = s * 0.11;
-
-    // Tres centros en triángulo equilátero
-    let centers = [
-      { x: cx, y: cy - spread * 0.88, id: 1 },                  // Academia (Norte)
-      { x: cx - spread * 0.86, y: cy + spread * 0.52, id: 2 },  // Industria (Suroeste)
-      { x: cx + spread * 0.86, y: cy + spread * 0.52, id: 3 }   // Ciudad (Sureste)
-    ];
-
-    let perCluster = floor(count / 3);
-
-    for (let c = 0; c < 3; c++) {
-      let center = centers[c];
-      let clusterCount = (c === 2) ? (count - perCluster * 2) : perCluster;
-
-      for (let i = 0; i < clusterCount; i++) {
-        let ang = random(TWO_PI);
-        let r = pow(random(1), 1.5) * clusterR;
-        let x = center.x + cos(ang) * r;
-        let y = center.y + sin(ang) * (r * 0.88);
-
-        pts.push({
-          x: x,
-          y: y,
-          species: 'A',
-          clusterId: center.id
-        });
-      }
-    }
-    return pts;
-  },
-
-  /**
-   * SLIDE 5: irradiar
-   * Mantiene los 3 clusters, pero aumenta la amplitud de movimiento y algunas partículas
-   * empiezan a escapar de los bordes insinuando conexiones hacia afuera.
-   */
-  irradiar: function(count, w, h, opts = {}) {
-    let pts = [];
-    let s = min(w, h);
-    let cx = w * 0.52;
-    let cy = h * 0.52;
-    let spread = s * 0.28;
-    let clusterR = s * 0.12;
-
-    let centers = [
-      { x: cx, y: cy - spread * 0.88, id: 1 },
-      { x: cx - spread * 0.86, y: cy + spread * 0.52, id: 2 },
-      { x: cx + spread * 0.86, y: cy + spread * 0.52, id: 3 }
-    ];
-
-    // 80% en núcleos, 20% escapando hacia el exterior
-    let coreCount = floor(count * 0.80);
-    let escapeCount = count - coreCount;
-    let perCore = floor(coreCount / 3);
-
-    for (let c = 0; c < 3; c++) {
-      let center = centers[c];
-      let curCount = (c === 2) ? (coreCount - perCore * 2) : perCore;
-      for (let i = 0; i < curCount; i++) {
-        let ang = random(TWO_PI);
-        let r = pow(random(1), 1.4) * clusterR;
-        pts.push({
-          x: center.x + cos(ang) * r,
-          y: center.y + sin(ang) * r,
-          species: 'A',
-          clusterId: center.id
-        });
-      }
-    }
-
-    // Partículas que escapan hacia afuera
-    for (let i = 0; i < escapeCount; i++) {
-      let sourceCenter = centers[i % 3];
-      let outwardAngle = atan2(sourceCenter.y - cy, sourceCenter.x - cx) + random(-0.7, 0.7);
-      let distOut = clusterR * (1.1 + random(1.8));
+    for (let i = 0; i < totalGraderias; i++) {
+      let layer = floor(random(1, 8)); // 7 niveles de gradería
+      let angle = map(random(1), 0, 1, PI * 0.9, PI * 2.1); 
+      let r = map(layer, 1, 7, widthArch * 0.3, widthArch);
+      
+      // Añadir ligero ruido para que parezcan asientos ocupados
       pts.push({
-        x: sourceCenter.x + cos(outwardAngle) * distOut,
-        y: sourceCenter.y + sin(outwardAngle) * distOut,
+        x: cx + cos(angle) * r + random(-2, 2),
+        y: cy + sin(angle) * r * 0.6 + random(-2, 2),
         species: 'A',
-        clusterId: sourceCenter.id
+        clusterId: layer % 2 === 0 ? 1 : 2
       });
     }
 
+    for (let i = 0; i < totalEscenario; i++) {
+      let nx = random(-1, 1);
+      let ny = random(-1, 1);
+      pts.push({
+        x: cx + nx * (widthArch * 0.15),
+        y: cy + heightArch * 0.4 + ny * (heightArch * 0.1),
+        species: 'B',
+        clusterId: 3
+      });
+    }
     return pts;
   },
 
-  /**
-   * SLIDE 6 & 7: comunidad
-   * 3 clusters con crecimiento físico y aristas según edgeProgress.
-   * Slide 7: clusterRadius = baseRadius * (1 + 0.65 * edgeProgress) -> Crecimiento evidente.
-   */
-  comunidad: function(count, w, h, opts = {}) {
+  // SLIDE 3: Ramificación (El auditorio se rompe)
+  ramificacion: function(count, w, h, options = {}) {
     let pts = [];
-    let s = min(w, h);
-    let cx = w * 0.52;
-    let cy = h * 0.52;
-    let spread = s * 0.28;
+    let cx = w * 0.65; // Desplazado a la derecha por layout-tension
+    let cy = h * 0.5;
+    let rBase = w * 0.25;
 
-    let edgeProg = (opts.edgeProgress !== undefined) ? opts.edgeProgress : 0.40;
-    // Crecimiento físico real de los clusters en función de edgeProgress
-    let baseRadius = s * 0.11;
-    let clusterR = baseRadius * (1.0 + 0.65 * edgeProg);
+    // Tres raíces nacientes
+    let angles = [PI + 0.3, PI - 0.3, HALF_PI];
+    
+    for (let i = 0; i < count; i++) {
+      let branch = i % 3;
+      let progress = pow(random(1), 2.5); // Mayor densidad cerca del origen
+      let angle = angles[branch] + random(-0.2, 0.2) * (1 - progress);
+      let dist = progress * rBase;
 
-    let centers = [
-      { x: cx, y: cy - spread * 0.88, id: 1 },
-      { x: cx - spread * 0.86, y: cy + spread * 0.52, id: 2 },
-      { x: cx + spread * 0.86, y: cy + spread * 0.52, id: 3 }
-    ];
+      // El origen aún conserva un poco de la forma rígida
+      let rigidNoise = (1 - progress) * random(-10, 10);
 
-    // Distribución: 75% en núcleos expandidos, 25% tejiendo puentes
-    let bridgeCount = floor(count * (0.15 + 0.15 * edgeProg));
-    let coreCount = count - bridgeCount;
-    let perCore = floor(coreCount / 3);
-
-    for (let c = 0; c < 3; c++) {
-      let center = centers[c];
-      let curCount = (c === 2) ? (coreCount - perCore * 2) : perCore;
-      for (let i = 0; i < curCount; i++) {
-        let ang = random(TWO_PI);
-        let r = pow(random(1), 1.3) * clusterR;
-        pts.push({
-          x: center.x + cos(ang) * r,
-          y: center.y + sin(ang) * r,
-          species: 'A',
-          clusterId: center.id
-        });
-      }
+      pts.push({
+        x: cx + cos(angle) * dist + rigidNoise,
+        y: cy + sin(angle) * dist + rigidNoise,
+        species: 'A',
+        clusterId: branch + 1
+      });
     }
-
-    // Puentes entre los clusters (1-2, 2-3, 3-1)
-    let perBridge = floor(bridgeCount / 3);
-    for (let b = 0; b < 3; b++) {
-      let cA = centers[b];
-      let cB = centers[(b + 1) % 3];
-      let bCount = (b === 2) ? (bridgeCount - perBridge * 2) : perBridge;
-
-      for (let i = 0; i < bCount; i++) {
-        let t = random(0.1, 0.9);
-        let px = lerp(cA.x, cB.x, t);
-        let py = lerp(cA.y, cB.y, t);
-        let perpX = -(cB.y - cA.y) * 0.10 * (1 - edgeProg);
-        let perpY = (cB.x - cA.x) * 0.10 * (1 - edgeProg);
-        let jitter = random(-14, 14);
-
-        pts.push({
-          x: px + perpX + jitter,
-          y: py + perpY + jitter,
-          species: 'A',
-          clusterId: 0
-        });
-      }
-    }
-
     return pts;
   },
 
-  /**
-   * SLIDE 8: comunidad_tejida (comunidad-tejida)
-   * Puentes sólidos entre los 3 clusters + partículas exploradoras desplazándose hacia afuera.
-   */
-  comunidad_tejida: function(count, w, h, opts = {}) {
+  // SLIDE 4: Triada (Tres familias distintas)
+  triada: function(count, w, h, options = {}) {
     let pts = [];
-    let s = min(w, h);
-    let cx = w * 0.48; // Cede espacio sutil a la foto documental
-    let cy = h * 0.52;
-    let spread = s * 0.28;
-    let clusterR = s * 0.16; // Núcleos ya grandes y crecidos
+    let cx = w * 0.65;
+    let cy = h * 0.5;
+    let spacing = w * 0.18;
 
     let centers = [
-      { x: cx, y: cy - spread * 0.88, id: 1 },
-      { x: cx - spread * 0.86, y: cy + spread * 0.52, id: 2 },
-      { x: cx + spread * 0.86, y: cy + spread * 0.52, id: 3 }
+      { x: cx, y: cy - spacing * 0.8 },      // Academia (Arriba)
+      { x: cx - spacing, y: cy + spacing * 0.4 },  // Industria (Izq)
+      { x: cx + spacing, y: cy + spacing * 0.4 }   // Ciudad (Der)
     ];
 
-    let explorerCount = floor(count * 0.22); // 22% exploradoras
-    let bridgeCount = floor(count * 0.28);   // 28% puentes sólidos
-    let coreCount = count - explorerCount - bridgeCount;
-    let perCore = floor(coreCount / 3);
-
-    // Núcleos
-    for (let c = 0; c < 3; c++) {
-      let center = centers[c];
-      let curCount = (c === 2) ? (coreCount - perCore * 2) : perCore;
-      for (let i = 0; i < curCount; i++) {
+    for (let i = 0; i < count; i++) {
+      let cid = (i % 3);
+      let center = centers[cid];
+      let rNorm = pow(random(1), 0.5);
+      
+      let x = center.x, y = center.y;
+      
+      if (cid === 0) {
+        // Academia: Organizada (Círculos concéntricos)
+        let rings = 4;
+        let ring = floor(random(rings));
+        let r = map(ring, 0, rings-1, 10, spacing * 0.4);
         let ang = random(TWO_PI);
-        let r = pow(random(1), 1.2) * clusterR;
-        pts.push({
-          x: center.x + cos(ang) * r,
-          y: center.y + sin(ang) * r,
-          species: 'A',
-          clusterId: center.id
-        });
+        x += cos(ang) * r;
+        y += sin(ang) * r;
+      } else if (cid === 1) {
+        // Industria: Densa y cuadrada
+        let nx = random(-1, 1);
+        let ny = random(-1, 1);
+        x += nx * spacing * 0.35;
+        y += ny * spacing * 0.35;
+      } else {
+        // Ciudad: Expansiva y orgánica
+        let ang = random(TWO_PI);
+        let r = spacing * 0.5 * pow(random(1), 1.5); // Cola larga
+        x += cos(ang) * r;
+        y += sin(ang) * r;
       }
+
+      pts.push({ x: x, y: y, species: 'A', clusterId: cid + 1 });
+    }
+    return pts;
+  },
+
+  // SLIDE 5: Onda de Impacto
+  impacto: function(count, w, h, options = {}) {
+    let pts = [];
+    let cx = w * 0.65;
+    let cy = h * 0.5;
+    let spacing = w * 0.18;
+
+    let centers = [
+      { x: cx, y: cy - spacing * 0.8 },
+      { x: cx - spacing, y: cy + spacing * 0.4 },
+      { x: cx + spacing, y: cy + spacing * 0.4 }
+    ];
+
+    // Simular una onda saliendo del grupo 2 (Industria) y afectando a los otros
+    let waveOrigin = centers[1];
+
+    for (let i = 0; i < count; i++) {
+      let cid = (i % 3);
+      let center = centers[cid];
+      let rNorm = random(1);
+      let ang = random(TWO_PI);
+      let r = spacing * 0.4 * rNorm;
+
+      let x = center.x + cos(ang) * r;
+      let y = center.y + sin(ang) * r;
+
+      // Desplazamiento por onda
+      let dx = x - waveOrigin.x;
+      let dy = y - waveOrigin.y;
+      let distToOrigin = sqrt(dx * dx + dy * dy);
+      
+      // Onda matemática (seno desplazado)
+      let waveForce = sin(distToOrigin * 0.02 - 1.5) * 40;
+      if (waveForce > 0) {
+        x += (dx / distToOrigin) * waveForce;
+        y += (dy / distToOrigin) * waveForce;
+      }
+
+      pts.push({ x: x, y: y, species: 'A', clusterId: cid + 1 });
+    }
+    return pts;
+  },
+
+  // SLIDE 6: Comunidad (Filamentos)
+  comunidad: function(count, w, h, options = {}) {
+    let pts = [];
+    let cx = w * 0.5;
+    let cy = h * 0.6;
+    let r = min(w, h) * 0.35;
+
+    for (let i = 0; i < count; i++) {
+      // Red orgánica dispersa
+      let x = cx + random(-r, r) * random(0.5, 1);
+      let y = cy + random(-r, r) * random(0.5, 1);
+      
+      pts.push({ x: x, y: y, species: 'A', clusterId: (i % 3) + 1 });
+    }
+    return pts;
+  },
+
+  // SLIDE 7: Atracción (Talento externo)
+  atraccion: function(count, w, h, options = {}) {
+    let pts = [];
+    let cx = w * 0.5;
+    let cy = h * 0.6;
+    let r = min(w, h) * 0.25;
+
+    let coreCount = floor(count * 0.7);
+    let externalCount = count - coreCount;
+
+    for (let i = 0; i < coreCount; i++) {
+      let angle = random(TWO_PI);
+      let dist = random(r);
+      pts.push({ x: cx + cos(angle)*dist, y: cy + sin(angle)*dist, species: 'A', clusterId: 1 });
     }
 
-    // Puentes sólidos
-    let perBridge = floor(bridgeCount / 3);
-    for (let b = 0; b < 3; b++) {
-      let cA = centers[b];
-      let cB = centers[(b + 1) % 3];
-      let bCount = (b === 2) ? (bridgeCount - perBridge * 2) : perBridge;
-      for (let i = 0; i < bCount; i++) {
-        let t = random(0.05, 0.95);
-        let px = lerp(cA.x, cB.x, t);
-        let py = lerp(cA.y, cB.y, t);
-        let normalOffset = random(-12, 12);
-        pts.push({
-          x: px + normalOffset,
-          y: py + normalOffset,
-          species: 'A',
-          clusterId: 0
-        });
-      }
+    for (let i = 0; i < externalCount; i++) {
+      let angle = random(TWO_PI);
+      // Partículas externas siendo atraídas (espiral o estelas)
+      let dist = r + random(r * 0.5, r * 1.5);
+      let spiralOffset = -0.5; // ángulo de arrastre
+      
+      pts.push({ 
+        x: cx + cos(angle + spiralOffset)*dist, 
+        y: cy + sin(angle + spiralOffset)*dist, 
+        species: 'B', 
+        clusterId: 2 
+      });
+    }
+    return pts;
+  },
+
+  // SLIDE 8: Exploración (Nuevas rutas)
+  exploracion: function(count, w, h, options = {}) {
+    let pts = [];
+    let cx = w * 0.65;
+    let cy = h * 0.5;
+    
+    let coreCount = floor(count * 0.5);
+    let explorerCount = count - coreCount;
+
+    // Núcleo
+    for (let i = 0; i < coreCount; i++) {
+      let r = random(w * 0.15);
+      let a = random(TWO_PI);
+      pts.push({ x: cx + cos(a)*r, y: cy + sin(a)*r, species: 'A', clusterId: 1 });
     }
 
-    // Exploradoras en la periferia
+    // Rutas divergentes
+    let routes = 5;
     for (let i = 0; i < explorerCount; i++) {
-      let ang = random(TWO_PI);
-      let distOut = spread * (1.1 + random(0.6));
-      pts.push({
-        x: cx + cos(ang) * distOut,
-        y: cy + sin(ang) * (distOut * 0.85),
-        species: (i % 3 === 0) ? 'B' : 'A', // Primeras trazas de especie emergente
-        clusterId: 99
-      });
+      let route = i % routes;
+      let baseAngle = (route / routes) * TWO_PI;
+      let progress = random(1);
+      let length = w * 0.35;
+      
+      let pathWander = sin(progress * 10 + route) * 30;
+      
+      let x = cx + cos(baseAngle) * (progress * length) + cos(baseAngle + HALF_PI) * pathWander;
+      let y = cy + sin(baseAngle) * (progress * length) + sin(baseAngle + HALF_PI) * pathWander;
+      
+      pts.push({ x: x, y: y, species: 'B', clusterId: 2 });
     }
-
     return pts;
   },
 
-  /**
-   * SLIDE 9: vision
-   * 3 clusters con tensión bipolar: dos clusters derivan hacia un polo (sureste)
-   * y el tercero deriva hacia el otro polo (noroeste). Tensión entre dos direcciones.
-   */
-  vision: function(count, w, h, opts = {}) {
+  // SLIDE 9: Dos Visiones
+  visiones: function(count, w, h, options = {}) {
     let pts = [];
-    let s = min(w, h);
-    let cx = w * 0.52;
-    let cy = h * 0.50;
-
-    // Dos polos principales de tensión diagonal
-    // Polo 1 (Noroeste - Generación Pionera): 1 cluster
-    let pole1 = { x: cx - s * 0.28, y: cy - s * 0.18 };
-    // Polo 2 (Sureste - Generación Emergente): 2 clusters adyacentes
-    let pole2A = { x: cx + s * 0.24, y: cy + s * 0.10 };
-    let pole2B = { x: cx + s * 0.32, y: cy + s * 0.24 };
-
-    let clusterR = s * 0.14;
-    let tensionBridgeCount = floor(count * 0.25);
-    let coreCount = count - tensionBridgeCount;
-    let p1Count = floor(coreCount * 0.40);
-    let p2ACount = floor(coreCount * 0.30);
-    let p2BCount = coreCount - p1Count - p2ACount;
-
-    // Cluster 1 (Noroeste)
-    for (let i = 0; i < p1Count; i++) {
-      let ang = random(TWO_PI);
-      let r = pow(random(1), 1.3) * clusterR;
-      pts.push({
-        x: pole1.x + cos(ang) * r,
-        y: pole1.y + sin(ang) * r,
-        species: 'A',
-        clusterId: 1
-      });
+    let cx = w * 0.65;
+    let cy = h * 0.5;
+    
+    for (let i = 0; i < count; i++) {
+      let isOld = i % 2 === 0;
+      let angle = random(TWO_PI);
+      
+      if (isOld) {
+        // Generación anterior: Anclada, densa, cerca del centro
+        let r = pow(random(1), 2) * (w * 0.18);
+        pts.push({ x: cx + cos(angle)*r, y: cy + sin(angle)*r, species: 'A', clusterId: 1 });
+      } else {
+        // Nueva generación: Fluida, explorando el perímetro externo pero orientada al centro
+        let r = (w * 0.15) + random(w * 0.15);
+        pts.push({ x: cx + cos(angle)*r, y: cy + sin(angle)*r, species: 'B', clusterId: 2 });
+      }
     }
-
-    // Cluster 2A (Sureste)
-    for (let i = 0; i < p2ACount; i++) {
-      let ang = random(TWO_PI);
-      let r = pow(random(1), 1.3) * (clusterR * 0.9);
-      pts.push({
-        x: pole2A.x + cos(ang) * r,
-        y: pole2A.y + sin(ang) * r,
-        species: (i % 2 === 0) ? 'B' : 'A',
-        clusterId: 2
-      });
-    }
-
-    // Cluster 2B (Sureste)
-    for (let i = 0; i < p2BCount; i++) {
-      let ang = random(TWO_PI);
-      let r = pow(random(1), 1.3) * (clusterR * 0.9);
-      pts.push({
-        x: pole2B.x + cos(ang) * r,
-        y: pole2B.y + sin(ang) * r,
-        species: 'B',
-        clusterId: 3
-      });
-    }
-
-    // Banda de tensión diagonal activa entre ambos polos
-    for (let i = 0; i < tensionBridgeCount; i++) {
-      let t = random(0.05, 0.95);
-      let targetPole = (random() > 0.5) ? pole2A : pole2B;
-      let px = lerp(pole1.x, targetPole.x, t);
-      let py = lerp(pole1.y, targetPole.y, t);
-      let jitter = (sin(t * PI) * s * 0.08) * random(-1, 1);
-
-      pts.push({
-        x: px + jitter * 0.3,
-        y: py + jitter,
-        species: (t < 0.45) ? 'A' : (t > 0.55 ? 'B' : 'bridge'),
-        clusterId: 0
-      });
-    }
-
     return pts;
   },
 
-  /**
-   * SLIDE 10 & 11: especies
-   * Reorganización en 2 especies equivalentes y estables (Magenta vs Azul Eléctrico).
-   * Slide 10: Interpolación gradual de 2 segundos.
-   * Slide 11: Dos especies estables lado a lado, coexistiendo en equilibrio.
-   */
-  especies: function(count, w, h, opts = {}) {
+  // SLIDE 10: Interpenetración (Trabajo Conjunto)
+  interpenetracion: function(count, w, h, options = {}) {
     let pts = [];
-    let s = min(w, h);
-    let cx = w * 0.52;
-    let cy = h * 0.52;
-    let distApart = s * 0.26;
-    let speciesR = s * 0.20;
+    let cx = w * 0.65;
+    let cy = h * 0.5;
+    let maxR = w * 0.22;
 
-    let centerA = { x: cx - distApart, y: cy }; // Especie A (Pionera - Magenta)
-    let centerB = { x: cx + distApart, y: cy }; // Especie B (Emergente - Azul Eléctrico)
-
-    let half = floor(count / 2);
-
-    // Especie A (Izquierda)
-    for (let i = 0; i < half; i++) {
-      let ang = random(TWO_PI);
-      let r = pow(random(1), 1.4) * speciesR;
-      // Ondulación orgánica
-      let wave = sin(ang * 3) * (speciesR * 0.12);
-      pts.push({
-        x: centerA.x + cos(ang) * (r + wave),
-        y: centerA.y + sin(ang) * (r + wave),
-        species: 'A',
-        clusterId: 1
-      });
+    for (let i = 0; i < count; i++) {
+      let isOld = i % 2 === 0;
+      let angle = random(TWO_PI);
+      
+      // Ambas ocupan el mismo volumen, pero con distribuciones matemáticas distintas
+      if (isOld) {
+        // Distribución gaussiana/exponencial (densa en el medio)
+        let r = pow(random(1), 1.5) * maxR;
+        pts.push({ x: cx + cos(angle)*r, y: cy + sin(angle)*r, species: 'A', clusterId: 1 });
+      } else {
+        // Distribución uniforme (ocupa todo el espacio por igual)
+        let r = sqrt(random(1)) * maxR;
+        pts.push({ x: cx + cos(angle)*r, y: cy + sin(angle)*r, species: 'B', clusterId: 2 });
+      }
     }
-
-    // Especie B (Derecha)
-    for (let i = 0; i < (count - half); i++) {
-      let ang = random(TWO_PI);
-      let r = pow(random(1), 1.4) * speciesR;
-      let wave = cos(ang * 3) * (speciesR * 0.12);
-      pts.push({
-        x: centerB.x + cos(ang) * (r + wave),
-        y: centerB.y + sin(ang) * (r + wave),
-        species: 'B',
-        clusterId: 2
-      });
-    }
-
     return pts;
   },
 
-  /**
-   * SLIDE 12: entretejido
-   * REDISEÑADO: Patrón de construcción activa en cremallera / zigzag / ensamble
-   * en la zona de contacto central. Las dos especies encajan como piezas que construyen.
-   */
-  entretejido: function(count, w, h, opts = {}) {
+  // SLIDE 11: Periferia
+  periferia: function(count, w, h, options = {}) {
     let pts = [];
-    let s = min(w, h);
-    let cx = w * 0.48; // Ligeramente a la izquierda por la fotografía documental
-    let cy = h * 0.52;
+    let cx = w * 0.5;
+    let cy = h * 0.6;
+    let coreR = w * 0.15;
+    let outerR = w * 0.35;
 
-    let totalWidth = s * 0.65;
-    let totalHeight = s * 0.55;
-
-    // 40% de partículas en la zona de construcción activa en zigzag/cremallera
-    let zipperCount = floor(count * 0.44);
-    let flankCount = count - zipperCount;
-    let flankHalf = floor(flankCount / 2);
-
-    // Zona de Flanco Izquierdo (Especie A)
-    for (let i = 0; i < flankHalf; i++) {
-      let u = random(0, 0.42);
-      let v = random(-0.5, 0.5);
-      pts.push({
-        x: cx - totalWidth * 0.5 + u * totalWidth,
-        y: cy + v * totalHeight * (0.8 + 0.4 * sin(u * PI)),
-        species: 'A',
-        clusterId: 1
-      });
+    for (let i = 0; i < count; i++) {
+      let isOld = i % 2 === 0;
+      let angle = random(TWO_PI);
+      
+      if (isOld) {
+        // Centrales
+        let r = sqrt(random(1)) * coreR;
+        pts.push({ x: cx + cos(angle)*r, y: cy + sin(angle)*r, species: 'A', clusterId: 1 });
+      } else {
+        // Periféricas (Jóvenes) — no invisibles, pero en los márgenes de la red
+        // Algunas infiltradas en el centro (20%) y el resto en el exterior (80%)
+        let r = random(1) > 0.2 ? random(coreR, outerR) : random(coreR);
+        pts.push({ x: cx + cos(angle)*r, y: cy + sin(angle)*r, species: 'B', clusterId: 2 });
+      }
     }
-
-    // Zona de Flanco Derecho (Especie B)
-    for (let i = 0; i < (flankCount - flankHalf); i++) {
-      let u = random(0.58, 1.0);
-      let v = random(-0.5, 0.5);
-      pts.push({
-        x: cx - totalWidth * 0.5 + u * totalWidth,
-        y: cy + v * totalHeight * (0.8 + 0.4 * sin(u * PI)),
-        species: 'B',
-        clusterId: 2
-      });
-    }
-
-    // ZONA DE CONTACTO / CONSTRUCCIÓN EN ZIGZAG Y DIENTES DE CREMALLERA
-    let numTeeth = 8;
-    let teethHeight = totalHeight / numTeeth;
-
-    for (let i = 0; i < zipperCount; i++) {
-      let toothIndex = i % numTeeth;
-      let toothY = cy - totalHeight * 0.5 + (toothIndex + 0.5) * teethHeight;
-      let isToothA = (toothIndex % 2 === 0);
-
-      // Los dientes de A penetran hacia la derecha (+), los de B hacia la izquierda (-)
-      let penetration = s * 0.12;
-      let depth = random(0.1, 1.0) * penetration;
-      let toothX = isToothA ? (cx + depth) : (cx - depth);
-
-      let jitterY = random(-teethHeight * 0.35, teethHeight * 0.35);
-
-      pts.push({
-        x: toothX,
-        y: toothY + jitterY,
-        species: isToothA ? 'A' : 'B',
-        clusterId: 3
-      });
-    }
-
     return pts;
   },
 
-  /**
-   * SLIDE 13: portal
-   * Estructura arquitectónica ortogonal de marco / grilla.
-   * Enmarca el cierre y el código QR conectando con el futuro.
-   */
-  portal: function(count, w, h, opts = {}) {
+  // SLIDE 12: Construcción (Entrelazado)
+  construccion: function(count, w, h, options = {}) {
     let pts = [];
-    let s = min(w, h);
-    let cx = w * 0.48;
-    let cy = h * 0.50;
-
-    let pw = s * 0.56;
-    let ph = s * 0.60;
-
-    // Distribución en las 4 vigas del marco portal + perspectiva hacia el centro
-    let perBeam = floor(count * 0.20);
-    let perspectiveCount = count - perBeam * 4;
-
-    // 1. Columna Izquierda
-    for (let i = 0; i < perBeam; i++) {
-      let y = map(i, 0, perBeam - 1, cy - ph / 2, cy + ph / 2);
-      let thickness = random(-14, 14);
-      pts.push({
-        x: cx - pw / 2 + thickness,
-        y: y,
-        species: 'A',
-        clusterId: 1
+    let cx = w * 0.65;
+    let cy = h * 0.5;
+    
+    // Una espiral de doble hélice o un tejido de grilla isométrica
+    let strands = 8;
+    for (let i = 0; i < count; i++) {
+      let isOld = i % 2 === 0;
+      let strand = i % strands;
+      let progress = random(1);
+      
+      let baseAngle = (strand / strands) * TWO_PI;
+      let radius = w * 0.25 * progress;
+      
+      // Hélice
+      let twist = isOld ? (progress * TWO_PI) : (-progress * TWO_PI);
+      let finalAngle = baseAngle + twist;
+      
+      pts.push({ 
+        x: cx + cos(finalAngle) * radius, 
+        y: cy + sin(finalAngle) * radius, 
+        species: isOld ? 'A' : 'B', 
+        clusterId: isOld ? 1 : 2 
       });
     }
+    return pts;
+  },
 
-    // 2. Columna Derecha
-    for (let i = 0; i < perBeam; i++) {
-      let y = map(i, 0, perBeam - 1, cy - ph / 2, cy + ph / 2);
-      let thickness = random(-14, 14);
-      pts.push({
-        x: cx + pw / 2 + thickness,
-        y: y,
-        species: 'B',
-        clusterId: 2
+  // SLIDE 13: Portal Unificado
+  portal: function(count, w, h, options = {}) {
+    let pts = [];
+    let cx = w * 0.5;
+    let cy = h * 0.5;
+    let r = min(w, h) * 0.45;
+
+    // Torus / Portal de partículas interconectadas
+    for (let i = 0; i < count; i++) {
+      let angle = random(TWO_PI);
+      let ringDist = random(-r * 0.15, r * 0.15); // Grosor del anillo
+      
+      // 80% en el anillo, 20% en el centro
+      let finalR = random(1) > 0.2 ? r + ringDist : random(r * 0.8);
+      
+      pts.push({ 
+        x: cx + cos(angle) * finalR, 
+        y: cy + sin(angle) * finalR, 
+        species: i % 2 === 0 ? 'A' : 'B', 
+        clusterId: 1 
       });
     }
-
-    // 3. Dintel Superior
-    for (let i = 0; i < perBeam; i++) {
-      let x = map(i, 0, perBeam - 1, cx - pw / 2 - 15, cx + pw / 2 + 15);
-      let thickness = random(-14, 14);
-      pts.push({
-        x: x,
-        y: cy - ph / 2 + thickness,
-        species: (i % 2 === 0) ? 'A' : 'B',
-        clusterId: 3
-      });
-    }
-
-    // 4. Umbral Inferior
-    for (let i = 0; i < perBeam; i++) {
-      let x = map(i, 0, perBeam - 1, cx - pw / 2 - 20, cx + pw / 2 + 20);
-      let thickness = random(-14, 14);
-      pts.push({
-        x: x,
-        y: cy + ph / 2 + thickness,
-        species: (i % 2 === 0) ? 'A' : 'B',
-        clusterId: 4
-      });
-    }
-
-    // 5. Líneas de perspectiva en fuga hacia el centro (marco tridimensional)
-    for (let i = 0; i < perspectiveCount; i++) {
-      let t = random(0.15, 0.95);
-      let cornerX = (random() > 0.5) ? (cx + pw / 2) : (cx - pw / 2);
-      let cornerY = (random() > 0.5) ? (cy + ph / 2) : (cy - ph / 2);
-
-      let px = lerp(cx, cornerX, t);
-      let py = lerp(cy, cornerY, t);
-
-      pts.push({
-        x: px + random(-8, 8),
-        y: py + random(-8, 8),
-        species: (i % 2 === 0) ? 'B' : 'A',
-        clusterId: 5
-      });
-    }
-
     return pts;
   }
+
 };
 
 if (typeof module !== 'undefined' && module.exports) {

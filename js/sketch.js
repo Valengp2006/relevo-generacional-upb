@@ -18,9 +18,9 @@ let currentMode = CONFIG.modes.TEXT;
 let currentLang = CONFIG.defaultLanguage || 'pt';
 let slidePhaseTimer = 0.0;
 let isPresentationMode = false;
-let domTextVisible = false;
 
-const DISSOLVE_AT = 4.3; // segundos: cuándo el DOM toma el relevo del titular
+
+ // segundos: cuándo el DOM toma el relevo del titular
 
 let slideTitleEl, huellaCaptionEl;
 
@@ -33,8 +33,7 @@ function setup() {
   particleSystem = new ParticleSystem(CONFIG.particles.count || 1800);
   sampler = new TargetSampler();
 
-  slideTitleEl = document.getElementById('slide-title');
-  huellaCaptionEl = document.getElementById('huella-caption');
+  
 
   initKeyboardAndUIListeners();
   applyState(true);
@@ -51,15 +50,8 @@ function draw() {
       if (particleSystem.currentPhase !== 'TEXT_CLOUD') particleSystem.setPhase('TEXT_CLOUD');
     } else if (slidePhaseTimer < 3.5) {
       if (particleSystem.currentPhase !== 'TEXT_ORGANIZING') particleSystem.setPhase('TEXT_ORGANIZING');
-    } else if (slidePhaseTimer < DISSOLVE_AT) {
-      if (particleSystem.currentPhase !== 'TEXT_FORMED') particleSystem.setPhase('TEXT_FORMED');
     } else {
-      // Fusión: partículas a 0, titular DOM visible
-      if (!domTextVisible) {
-        particleSystem.setAllParticlesAlpha(0);
-        if (slideTitleEl) slideTitleEl.classList.add('visible');
-        domTextVisible = true;
-      }
+      if (particleSystem.currentPhase !== 'TEXT_FORMED') particleSystem.setPhase('TEXT_FORMED');
     }
   }
 
@@ -129,19 +121,6 @@ function applyState(isSlideChange = false) {
 
   let headline = slide.title[currentLang] || slide.title['pt'];
 
-  // Sombra/huella DOM real — mismo texto, arranca invisible
-  if (huellaCaptionEl) {
-    huellaCaptionEl.innerHTML = headline; // Usa innerHTML para renderizar los tags <b>
-    huellaCaptionEl.classList.remove('visible');
-    if (slide.hasPhoto) {
-      huellaCaptionEl.style.left = '27%';
-      huellaCaptionEl.style.maxWidth = '42vw';
-    } else {
-      huellaCaptionEl.style.left = '50%';
-      huellaCaptionEl.style.maxWidth = '70vw';
-    }
-  }
-  
   // Mostrar u ocultar el botón de Instagram
   let btnInsta = document.getElementById('btn-instagram');
   if (btnInsta) {
@@ -151,47 +130,10 @@ function applyState(isSlideChange = false) {
       btnInsta.style.display = 'none';
     }
   }
-  domTextVisible = false;
 
   let textTargets = sampler.sampleText(headline, CONFIG.particles.count, slide.hasPhoto);
   let cloudTargets = sampler.sampleCloud(sampler.lastTextLayout, CONFIG.particles.count);
-
-  // Titular DOM real — posicionamiento ABSOLUTO para clonar exactamente a las partículas
-  if (slideTitleEl && sampler.lastTextLayout) {
-    let layout = sampler.lastTextLayout;
-    // Permite multi-línea con saltos de línea exactos a los que procesó el canvas
-    slideTitleEl.innerHTML = layout.lines.join('<br>');
-    slideTitleEl.classList.remove('visible');
-    
-    // Eliminamos la interferencia de layout-center o flex
-    let container = slideTitleEl.closest('.main-content');
-    if (container) {
-      container.style.display = 'block';
-      container.style.padding = '0';
-    }
-
-    // p5.js con textAlign(LEFT, TOP) dibuja el glifo desde la coordenada y exacta.
-    // CSS con line-height > font-size agrega un "half-leading" encima y debajo del glifo.
-    // Para alinear perfectamente el DOM con el canvas, debemos restar ese espacio superior en CSS,
-    // y además compensar la altura de las mayúsculas (fudge factor ~10-12% del fontSize).
-    let halfLeading = (layout.lineHeight - layout.fontSize) / 2;
-    let p5TopOffset = layout.fontSize * 0.12; 
-    let finalTop = layout.startY - halfLeading - p5TopOffset;
-
-    slideTitleEl.style.position = 'absolute';
-    slideTitleEl.style.left = layout.startX + 'px';
-    slideTitleEl.style.top = finalTop + 'px';
-    slideTitleEl.style.transform = 'translate(-50%, 0)';
-    slideTitleEl.style.width = layout.maxWidth + 'px';
-    slideTitleEl.style.textAlign = 'center';
-    slideTitleEl.style.fontSize = layout.fontSize + 'px';
-    slideTitleEl.style.lineHeight = layout.lineHeight + 'px';
-    slideTitleEl.style.letterSpacing = layout.letterSpacing + 'px';
-    slideTitleEl.style.fontWeight = '700';
-    slideTitleEl.style.margin = '0';
-    slideTitleEl.style.padding = '0';
-  }
-
+  let huellaTargets = sampler.sampleTextForHuella(headline, 400, slide.hasPhoto);
   let sType = slide.sculptureType || 'nucleo';
   let generator = SCULPTURES[sType] || SCULPTURES['nucleo'];
   let opts = {};
@@ -217,6 +159,7 @@ function applyState(isSlideChange = false) {
     textTargets: textTargets,
     cloudTargets: cloudTargets,
     sculptureTargets: sculptureTargets,
+    huellaTargets: huellaTargets,
     act: slide.act,
     hasPhoto: slide.hasPhoto,
     sculptureType: sType,
@@ -234,7 +177,7 @@ function applyState(isSlideChange = false) {
       particleSystem.setPhase('TEXT_ORGANIZING');
     } else {
       particleSystem.enterSculpture();
-      if (huellaCaptionEl) huellaCaptionEl.classList.add('visible');
+      
     }
   }
 
@@ -259,18 +202,12 @@ function updateToggleButtonUI() {
 
 function toggleMode() {
   if (currentMode === CONFIG.modes.TEXT) {
-    // → ESCULTURA: apaga el titular DOM, las partículas reaparecen formando la figura
     currentMode = CONFIG.modes.SCULPTURE;
     particleSystem.currentMode = 'sculpture';
-    if (slideTitleEl) slideTitleEl.classList.remove('visible');
-    domTextVisible = false;
     particleSystem.enterSculpture();
-    if (huellaCaptionEl) huellaCaptionEl.classList.add('visible');
   } else {
-    // → TEXTO: apaga la sombra DOM, las partículas reaparecen y vuelven a fusionarse
     currentMode = CONFIG.modes.TEXT;
     particleSystem.currentMode = 'text';
-    if (huellaCaptionEl) huellaCaptionEl.classList.remove('visible');
     slidePhaseTimer = 2.6; // entra directo a ORGANIZING; draw() se encarga del resto
     particleSystem.setPhase('TEXT_ORGANIZING');
   }

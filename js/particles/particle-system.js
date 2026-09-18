@@ -75,7 +75,8 @@ class ParticleSystem {
         p.setTarget(ct.x, ct.y);
         p.setTargetAlpha(225);
         p.setTargetScale(1.0);
-        this.applyTextColors(p, i);
+        let tt = (this.cachedTextTargets && this.cachedTextTargets.length > 0) ? this.cachedTextTargets[i % this.cachedTextTargets.length] : null;
+        this.applyTextColors(p, i, tt);
       }
     } else if (isOrganizing) {
       if (!this.cachedTextTargets || this.cachedTextTargets.length === 0) return;
@@ -88,7 +89,7 @@ class ParticleSystem {
         p.setTarget(tt.x, tt.y);
         p.setTargetAlpha(240);
         p.setTargetScale(1.0);
-        this.applyTextColors(p, i);
+        this.applyTextColors(p, i, tt);
       }
     } else if (isTextFormed) {
       if (!this.cachedTextTargets || this.cachedTextTargets.length === 0) return;
@@ -99,34 +100,32 @@ class ParticleSystem {
         p.setBreathAmp(0);
         let tt = this.cachedTextTargets[i % totalText];
         p.setTarget(tt.x, tt.y);
-        p.setTargetAlpha(245); // sketch.js baja esto a 0 cuando el DOM ya se fusionó
+        p.setTargetAlpha(245);
         p.setTargetScale(1.0);
-        this.applyTextColors(p, i);
+        this.applyTextColors(p, i, tt);
       }
     } else if (isSculpture) {
       this.enterSculpture();
     }
   }
 
-  applyTextColors(p, i) {
+  applyTextColors(p, i, textTarget = null) {
     p.setSpecies(i % 2 === 0 ? 'A' : 'B', 0);
-    if (this.currentAct <= 2) {
-      if (i % 6 === 0) {
-        p.setTargetRGB(0, 180, 216);
-      } else {
-        p.setTargetRGB(224, 33, 138);
-      }
-    } else if (this.currentAct === 3) {
-      if (i % 2 === 0) {
-        p.setTargetRGB(224, 33, 138);
-      } else {
-        p.setTargetRGB(0, 180, 216);
-      }
+    
+    let isHighlight = textTarget && textTarget.isHighlight;
+
+    if (isHighlight) {
+      // Color resaltado (Cian eléctrico o Magenta, usar Cian UPB = #00B4D8)
+      p.setTargetRGB(0, 180, 216);
     } else {
-      if (i % 5 === 0) {
-        p.setTargetRGB(255, 184, 28);
+      // Texto normal (predominantemente blanco para legibilidad extrema)
+      // Con ligeros toques sutiles de la paleta para que no sea un blanco aburrido
+      if (i % 8 === 0) {
+        p.setTargetRGB(210, 240, 255); // Cian muy claro
+      } else if (i % 7 === 0) {
+        p.setTargetRGB(255, 230, 245); // Magenta muy claro
       } else {
-        p.setTargetRGB(0, 180, 216);
+        p.setTargetRGB(255, 255, 255); // Blanco
       }
     }
   }
@@ -135,21 +134,21 @@ class ParticleSystem {
    * Color por partícula en modo escultura — extraído a helper para reusarlo
    * limpio desde enterSculpture() sin duplicar el bloque if/else gigante.
    */
-  applySculptureColor(p, i, sp, cid) {
+      applySculptureColor(p, i, sp, cid) {
     if (this.currentAct <= 2) {
-      if (this.currentSculptureType === 'nucleo') {
+      if (this.currentSculptureType === 'potencial') {
         let rVar = (i % 7 === 0) ? 238 : 224;
         let gVar = (i % 7 === 0) ? 45 : 33;
         let bVar = (i % 7 === 0) ? 148 : 138;
         p.setTargetRGB(rVar, gVar, bVar);
-      } else if (this.currentSculptureType === 'auditorio') {
+      } else if (this.currentSculptureType === 'auditorio' || this.currentSculptureType === 'ramificacion') {
         if (i % 5 === 0) {
           p.setTargetRGB(0, 180, 216);
         } else {
           p.setTargetRGB(224, 33, 138);
         }
-      } else if (this.currentSculptureType === 'triada' || this.currentSculptureType === 'irradiar' ||
-                 this.currentSculptureType === 'comunidad' || this.currentSculptureType === 'comunidad_tejida') {
+      } else if (this.currentSculptureType === 'triada' || this.currentSculptureType === 'impacto' ||
+                 this.currentSculptureType === 'comunidad' || this.currentSculptureType === 'atraccion' || this.currentSculptureType === 'exploracion') {
         if (cid === 1) {
           p.setTargetRGB(224, 33, 138);
         } else if (cid === 2) {
@@ -159,7 +158,7 @@ class ParticleSystem {
         } else {
           p.setTargetRGB(255, 184, 28);
         }
-      } else if (this.currentSculptureType === 'vision') {
+      } else if (this.currentSculptureType === 'visiones') {
         if (cid === 1) {
           p.setTargetRGB(224, 33, 138);
         } else if (cid === 2 || cid === 3) {
@@ -169,14 +168,6 @@ class ParticleSystem {
         }
       } else {
         p.setTargetRGB(224, 33, 138);
-      }
-    } else if (this.currentAct === 3) {
-      if (sp === 'A') {
-        p.setTargetRGB(224, 33, 138);
-      } else if (sp === 'B') {
-        p.setTargetRGB(0, 180, 216);
-      } else {
-        p.setTargetRGB(255, 184, 28);
       }
     } else {
       if (sp === 'A') {
@@ -198,7 +189,14 @@ class ParticleSystem {
   enterSculpture() {
     this.currentPhase = 'SCULPTURE_ACTIVE';
     if (!this.cachedSculptureTargets || this.cachedSculptureTargets.length === 0) return;
-    let total = this.cachedSculptureTargets.length;
+    
+    let totalSculpt = this.cachedSculptureTargets.length;
+    let totalHuella = (this.cachedHuellaTargets && this.cachedHuellaTargets.length > 0) ? this.cachedHuellaTargets.length : 0;
+    
+    // Si tenemos huella (sombra del texto), le asignamos las últimas ~400 partículas
+    // El resto va a la escultura principal
+    let huellaCount = totalHuella > 0 ? min(400, floor(this.particles.length * 0.15)) : 0;
+    let sculptCount = this.particles.length - huellaCount;
 
     let offsetX = 0;
     let scaleFactor = 1.0;
@@ -212,22 +210,35 @@ class ParticleSystem {
 
     for (let i = 0; i < this.particles.length; i++) {
       let p = this.particles[i];
-      let idx = Math.floor(i * (total / this.particles.length));
-      let target = this.cachedSculptureTargets[idx % total];
+      
+      if (i >= sculptCount && totalHuella > 0) {
+        // Asignar a huella
+        let target = this.cachedHuellaTargets[i % totalHuella];
+        p.setIsHuella(true);
+        p.setTarget(target.x, target.y);
+        p.setTargetAlpha(30); // Muy tenue
+        p.setTargetScale(1.0);
+        p.setBreathAmp(1.5);
+        this.applyTextColors(p, i, target); // Usa color de texto (blanco o highlight)
+      } else {
+        // Asignar a escultura
+        let idx = Math.floor(i * (totalSculpt / sculptCount));
+        let target = this.cachedSculptureTargets[idx % totalSculpt];
 
-      let finalX = (target.x - width / 2) * scaleFactor + width / 2 + offsetX;
-      let finalY = (target.y - height / 2) * scaleFactor + height / 2;
+        let finalX = (target.x - width / 2) * scaleFactor + width / 2 + offsetX;
+        let finalY = (target.y - height / 2) * scaleFactor + height / 2;
 
-      p.setIsHuella(false);
-      p.setTarget(finalX, finalY);
-      p.setTargetAlpha(sculptureAlpha);
-      p.setTargetScale(scaleFactor);
-      p.setBreathAmp(2.5);
+        p.setIsHuella(false);
+        p.setTarget(finalX, finalY);
+        p.setTargetAlpha(sculptureAlpha);
+        p.setTargetScale(scaleFactor);
+        p.setBreathAmp(2.5);
 
-      let sp = target.species || 'A';
-      let cid = target.clusterId || 0;
-      p.setSpecies(sp, cid);
-      this.applySculptureColor(p, i, sp, cid);
+        let sp = target.species || 'A';
+        let cid = target.clusterId || 0;
+        p.setSpecies(sp, cid);
+        this.applySculptureColor(p, i, sp, cid);
+      }
     }
   }
 

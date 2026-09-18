@@ -52,15 +52,32 @@ class TargetSampler {
   /**
    * Calcula el ancho total de una cadena con espaciado entre letras explícito.
    */
+  
+  parseHtmlChars(str) {
+    let chars = [];
+    let inBold = false;
+    for (let i = 0; i < str.length; i++) {
+      if (str.substr(i, 3) === '<b>') {
+        inBold = true;
+        i += 2;
+      } else if (str.substr(i, 4) === '</b>') {
+        inBold = false;
+        i += 3;
+      } else {
+        chars.push({ char: str[i], isBold: inBold });
+      }
+    }
+    return chars;
+  }
+
   measureSpacedText(pg, str, spacing) {
     if (!str) return 0;
-    let cleanStr = str.replace(/<\/?b>/g, '');
-    let chars = cleanStr.split('');
+    let parsed = this.parseHtmlChars(str);
     let w = 0;
-    for (let i = 0; i < chars.length; i++) {
-      w += pg.textWidth(chars[i]);
+    for (let i = 0; i < parsed.length; i++) {
+      w += pg.textWidth(parsed[i].char);
     }
-    w += Math.max(0, chars.length - 1) * spacing;
+    w += Math.max(0, parsed.length - 1) * spacing;
     return w;
   }
 
@@ -100,24 +117,28 @@ class TargetSampler {
    */
   drawSpacedLine(target, str, centerX, y, spacing) {
     if (!str) return;
-    let cleanStr = str.replace(/<\/?b>/g, '');
-    let chars = cleanStr.split('');
+    let parsed = this.parseHtmlChars(str);
     let charWidths = [];
     let totalW = 0;
 
-    for (let i = 0; i < chars.length; i++) {
-      let cw = target.textWidth(chars[i]);
+    for (let i = 0; i < parsed.length; i++) {
+      let cw = target.textWidth(parsed[i].char);
       charWidths.push(cw);
       totalW += cw;
     }
-    totalW += Math.max(0, chars.length - 1) * spacing;
+    totalW += Math.max(0, parsed.length - 1) * spacing;
 
     let startX = centerX - totalW / 2;
     let curX = startX;
 
     target.textAlign(LEFT, TOP);
-    for (let i = 0; i < chars.length; i++) {
-      target.text(chars[i], curX, y);
+    for (let i = 0; i < parsed.length; i++) {
+      if (parsed[i].isBold) {
+        target.fill(255, 0, 0, 255); // Red for highlighted particles
+      } else {
+        target.fill(255, 255, 255, 255); // White for normal particles
+      }
+      target.text(parsed[i].char, curX, y);
       curX += charWidths[i] + spacing;
     }
   }
@@ -345,7 +366,7 @@ class TargetSampler {
    * @param {number} alphaThreshold Umbral mínimo de opacidad (128 por defecto; sampleTextForHuella usa 40)
    */
   extractPoints(pg, desiredCount = 1800, minY = 0, maxY = height, alphaThreshold = 128) {
-    pg.loadPixels();
+    if (!pg.pixels || pg.pixels.length === 0) pg.loadPixels();
     let yStart = max(0, floor(minY));
     let yEnd = min(height, ceil(maxY));
 
@@ -369,7 +390,11 @@ class TargetSampler {
       for (let x = 0; x < width; x += sampleStep) {
         let idx = (x + y * width) * 4;
         if (pg.pixels[idx + 3] > alphaThreshold) {
-          points.push({ x: x, y: y });
+          let r = pg.pixels[idx];
+          let g = pg.pixels[idx + 1];
+          let b = pg.pixels[idx + 2];
+          let isHighlight = (r > 200 && g < 100 && b < 100);
+          points.push({ x: x, y: y, isHighlight: isHighlight });
         }
       }
     }

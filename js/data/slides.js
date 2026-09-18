@@ -16,7 +16,7 @@ const SLIDES_DATA = [
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
-    sculptureType: "nucleo",
+    sculptureType: "potencial",
     layout: "layout-center"
   },
   {
@@ -44,7 +44,7 @@ const SLIDES_DATA = [
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
-    sculptureType: "triada",
+    sculptureType: "ramificacion",
     layout: "layout-tension"
   },
   {
@@ -72,7 +72,7 @@ const SLIDES_DATA = [
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: true, photoUrl: "assets/images/slide-5.jpg",
-    sculptureType: "irradiar",
+    sculptureType: "impacto",
     layout: "layout-left"
   },
   {
@@ -101,7 +101,7 @@ const SLIDES_DATA = [
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
-    sculptureType: "comunidad",
+    sculptureType: "atraccion",
     edgeProgress: 0.85,
     layout: "layout-top-center"
   },
@@ -116,7 +116,7 @@ const SLIDES_DATA = [
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: true, photoUrl: "assets/images/slide-8.jpg",
-    sculptureType: "comunidad_tejida",
+    sculptureType: "exploracion",
     edgeProgress: 1.0,
     layout: "layout-left"
   },
@@ -131,7 +131,7 @@ const SLIDES_DATA = [
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
-    sculptureType: "vision",
+    sculptureType: "visiones",
     layout: "layout-tension"
   },
   {
@@ -145,7 +145,7 @@ const SLIDES_DATA = [
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
-    sculptureType: "especies",
+    sculptureType: "interpenetracion",
     layout: "layout-tension"
   },
   {
@@ -159,7 +159,7 @@ const SLIDES_DATA = [
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
-    sculptureType: "especies",
+    sculptureType: "periferia",
     layout: "layout-top-center"
   },
   {
@@ -173,7 +173,7 @@ const SLIDES_DATA = [
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: true, photoUrl: "assets/images/slide-12.jpeg",
-    sculptureType: "entretejido",
+    sculptureType: "construccion",
     layout: "layout-left"
   },
   {

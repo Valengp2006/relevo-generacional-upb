@@ -41,8 +41,8 @@ const CONFIG = {
 
   // Parámetros físicos del sistema de partículas
   particles: {
-    count: 1800,           // Pool fijo continuo
-    baseRadius: 2.2,
+    count: 3200,           // Pool fijo continuo
+    baseRadius: 2.4,
     maxSpeed: 14,          // Rapidez de respuesta en transiciones
     maxForce: 0.65,        // Suavidad de frenado
     arriveRadius: 70,      // Radio donde comienza el frenado de arrival

@@ -261,7 +261,7 @@ class Particle {
     if (this.isHuella) {
       r = this.radius * 0.82;
     } else if (phaseName === 'TEXT_FORMED') {
-      r = this.radius * 1.6; // puntos vecinos se funden en trazo sólido
+      r = this.radius * 1.8; // puntos vecinos se funden en trazo sólido
     }
     r *= this.scale;
     ellipse(this.pos.x, this.pos.y, r * 2, r * 2);
