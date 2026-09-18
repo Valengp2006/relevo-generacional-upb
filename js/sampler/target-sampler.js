@@ -186,7 +186,7 @@ class TargetSampler {
     let totalHeight = lines.length * lineHeight;
 
     let cy = hasPhoto ? height * 0.46 : height * 0.40;
-    if (textString.includes("QR con memoria")) cy = height * 0.38;
+    
     
     let startY = max(height * 0.15, cy - totalHeight / 2);
 

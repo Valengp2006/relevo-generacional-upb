@@ -122,7 +122,7 @@ class Particle {
     let breathOffset = createVector(cos(breathAngle) * breathRadial, sin(breathAngle) * (breathRadial * 0.85));
 
     // Target efectivo combinado con la respiración
-    let effectiveTarget = p5.Vector.add(this.target, breathOffset);
+    let effectiveTarget = p5.Vector.add(this.target, this.isQR ? createVector(0,0) : breathOffset);
 
     // 2b. AJUSTE — Evasión de la foto documental: se clampa el TARGET, no la posición.
     //     Antes esto vivía como una fuerza reactiva post-hoc (sección 7b) que competía

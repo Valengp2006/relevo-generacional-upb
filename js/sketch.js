@@ -215,7 +215,7 @@ function applyState(isSlideChange = false) {
   opts.hasPhoto = slide.hasPhoto;
   opts.centerX = slide.hasPhoto ? width * 0.48 : width * 0.5;
   let defaultCy = slide.hasPhoto ? height * 0.46 : height * 0.40;
-  if (headline.includes("QR con memoria")) defaultCy = height * 0.38;
+  
   opts.centerY = defaultCy;
   opts.radiusScale = slide.hasPhoto ? 0.65 : 0.85;
   

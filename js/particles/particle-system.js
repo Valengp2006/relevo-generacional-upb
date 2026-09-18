@@ -230,9 +230,10 @@ class ParticleSystem {
 
         p.setIsHuella(false);
         p.setTarget(finalX, finalY);
-        p.setTargetAlpha(sculptureAlpha);
+        p.isQR = target.isQR || false;
+        p.setTargetAlpha(p.isQR ? 255 : sculptureAlpha);
         p.setTargetScale(scaleFactor);
-        p.setBreathAmp(2.5);
+        p.setBreathAmp(p.isQR ? 0 : 2.5);
 
         let sp = target.species || 'A';
         let cid = target.clusterId || 0;

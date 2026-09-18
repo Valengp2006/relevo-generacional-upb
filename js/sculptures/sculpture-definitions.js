@@ -430,20 +430,69 @@ const SCULPTURES = {
   },
 
   // SLIDE 13: Portal Unificado
+let qrMatrix = [
+  [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1],
+  [1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+  [1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0],
+  [0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+  [0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0],
+  [1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0],
+  [1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1],
+  [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+  [1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+  [0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0],
+  [0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0],
+  [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1],
+  [1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1],
+  [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1],
+  [1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0],
+  [1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0],
+  [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+  [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0],
+  [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1],
+  [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0],
+  [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0],
+];
+
   portal: function(count, w, h, options = {}) {
     let pts = [];
     let cx = options.centerX || w * 0.5;
     let cy = options.centerY || h * 0.53;
     let scl = options.radiusScale || 1.0;
-    let r = min(w, h) * 0.45;
+    let r = min(w, h) * 0.45 * scl;
 
-    // Torus / Portal de partículas interconectadas
-    for (let i = 0; i < count; i++) {
+    // QR Code integration
+    let qrSize = 29; // 29x29 matrix
+    let pixelSize = w * 0.0075 * scl; // Tamaño de cada "pixel" del QR
+    let qrTotalSize = qrSize * pixelSize;
+    let startX = cx - qrTotalSize / 2;
+    let startY = cy - qrTotalSize / 2;
+
+    // Calculate how many particles we need for the QR code
+    let qrOnes = 0;
+    for (let row = 0; row < qrSize; row++) {
+      for (let col = 0; col < qrSize; col++) {
+        if (qrMatrix[row][col] === 1) qrOnes++;
+      }
+    }
+
+    let particlesPerPixel = 4; // Densidad para que sea escaneable
+    let qrParticleCount = qrOnes * particlesPerPixel;
+    
+    // Anillo exterior
+    let ringCount = count - qrParticleCount;
+    for (let i = 0; i < ringCount; i++) {
       let angle = random(TWO_PI);
-      let ringDist = random(-r * 0.15, r * 0.15); // Grosor del anillo
-      
-      // 80% en el anillo, 20% en el centro
-      let finalR = random(1) > 0.2 ? r + ringDist : random(r * 0.8);
+      let ringDist = random(-r * 0.15, r * 0.15);
+      let finalR = r + ringDist;
       
       pts.push({ 
         x: cx + cos(angle) * finalR, 
@@ -452,6 +501,26 @@ const SCULPTURES = {
         clusterId: 1 
       });
     }
+
+    // Dibujar QR Code
+    for (let row = 0; row < qrSize; row++) {
+      for (let col = 0; col < qrSize; col++) {
+        if (qrMatrix[row][col] === 1) {
+          for (let p = 0; p < particlesPerPixel; p++) {
+            let px = startX + col * pixelSize + random(pixelSize);
+            let py = startY + row * pixelSize + random(pixelSize);
+            pts.push({
+              x: px,
+              y: py,
+              species: 'C', // Usar una nueva especie para que no se muevan tanto
+              clusterId: 2, // Color cyan brillante
+              isQR: true    // Custom flag
+            });
+          }
+        }
+      }
+    }
+    
     return pts;
   }
 
