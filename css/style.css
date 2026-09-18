@@ -577,3 +577,33 @@ canvas {
 .huella-caption b {
   font-weight: 700;
 }
+
+/* Botón flotante Instagram */
+.btn-instagram {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-main);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+  pointer-events: auto;
+}
+.btn-instagram:hover {
+  background: var(--color-blue);
+  color: #000;
+  border-color: var(--color-blue);
+}
+
+.slide-title b, .huella-caption b {
+  color: var(--color-blue) !important;
+  font-weight: 800 !important;
+}

@@ -9,9 +9,9 @@ const SLIDES_DATA = [
     id: 1, act: 1,
     actTitle: { pt: "Ato 1 — Origem", es: "Acto 1 — Origen", en: "Act 1 — Origin" },
     title: {
-      pt: "<b>RELEVO GENERACIONAL:</b> LA VENTAJA QUE NADIE ESTÁ APROVECHANDO\n@centrodeeventosupb",
-      es: "<b>RELEVO GENERACIONAL:</b> LA VENTAJA QUE NADIE ESTÁ APROVECHANDO\n@centrodeeventosupb",
-      en: "<b>RELEVO GENERACIONAL:</b> LA VENTAJA QUE NADIE ESTÁ APROVECHANDO\n@centrodeeventosupb"
+      pt: "<b>RELEVO GENERACIONAL:</b> LA VENTAJA QUE NADIE ESTÁ APROVECHANDO",
+      es: "<b>RELEVO GENERACIONAL:</b> LA VENTAJA QUE NADIE ESTÁ APROVECHANDO",
+      en: "<b>RELEVO GENERACIONAL:</b> LA VENTAJA QUE NADIE ESTÁ APROVECHANDO"
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
@@ -180,9 +180,9 @@ const SLIDES_DATA = [
     id: 13, act: 4,
     actTitle: { pt: "Ato 4 — Abertura", es: "Acto 4 — Apertura", en: "Act 4 — Opening" },
     title: {
-      pt: "QR con memorias (pp móvil)\nQR redes @centrodeeventosupb",
-      es: "QR con memorias (pp móvil)\nQR redes @centrodeeventosupb",
-      en: "QR con memorias (pp móvil)\nQR redes @centrodeeventosupb"
+      pt: "QR con memorias (pp móvil)\nQR redes",
+      es: "QR con memorias (pp móvil)\nQR redes",
+      en: "QR con memorias (pp móvil)\nQR redes"
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },

@@ -131,7 +131,7 @@ function applyState(isSlideChange = false) {
 
   // Sombra/huella DOM real — mismo texto, arranca invisible
   if (huellaCaptionEl) {
-    huellaCaptionEl.textContent = headline;
+    huellaCaptionEl.innerHTML = headline; // Usa innerHTML para renderizar los tags <b>
     huellaCaptionEl.classList.remove('visible');
     if (slide.hasPhoto) {
       huellaCaptionEl.style.left = '27%';
@@ -139,6 +139,16 @@ function applyState(isSlideChange = false) {
     } else {
       huellaCaptionEl.style.left = '50%';
       huellaCaptionEl.style.maxWidth = '70vw';
+    }
+  }
+  
+  // Mostrar u ocultar el botón de Instagram
+  let btnInsta = document.getElementById('btn-instagram');
+  if (btnInsta) {
+    if (slide.id === 1 || slide.id === 13) {
+      btnInsta.style.display = 'block';
+    } else {
+      btnInsta.style.display = 'none';
     }
   }
   domTextVisible = false;
