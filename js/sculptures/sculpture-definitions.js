@@ -174,7 +174,7 @@ const SCULPTURES = {
     return pts;
   },
 
-  // SLIDE 5: Onda de Impacto
+    // SLIDE 5: Onda de Impacto (Uno afecta a los otros)
   impacto: function(count, w, h, options = {}) {
     let pts = [];
     let cx = w * 0.65;
@@ -182,38 +182,74 @@ const SCULPTURES = {
     let spacing = w * 0.18;
 
     let centers = [
-      { x: cx, y: cy - spacing * 0.8 },
-      { x: cx - spacing, y: cy + spacing * 0.4 },
-      { x: cx + spacing, y: cy + spacing * 0.4 }
+      { x: cx, y: cy - spacing * 0.8, cid: 1 },       // Arriba
+      { x: cx - spacing, y: cy + spacing * 0.4, cid: 2 }, // Izquierda (Origen del impacto)
+      { x: cx + spacing, y: cy + spacing * 0.4, cid: 3 }  // Derecha
     ];
 
-    // Simular una onda saliendo del grupo 2 (Industria) y afectando a los otros
-    let waveOrigin = centers[1];
+    let origin = centers[1];
+    
+    let nodeCount = floor(count * 0.4); // 40% en los nodos estables
+    let streamCount = count - nodeCount; // 60% en los rayos de impacto
 
-    for (let i = 0; i < count; i++) {
-      let cid = (i % 3);
-      let center = centers[cid];
-      let rNorm = random(1);
-      let ang = random(TWO_PI);
-      let r = spacing * 0.4 * rNorm;
-
-      let x = center.x + cos(ang) * r;
-      let y = center.y + sin(ang) * r;
-
-      // Desplazamiento por onda
-      let dx = x - waveOrigin.x;
-      let dy = y - waveOrigin.y;
-      let distToOrigin = sqrt(dx * dx + dy * dy);
+    // 1. Dibujar los Nodos
+    for (let i = 0; i < nodeCount; i++) {
+      let clusterIndex = i % 3;
+      let center = centers[clusterIndex];
+      let r = spacing * 0.35 * random(1);
+      let a = random(TWO_PI);
       
-      // Onda matemática (seno desplazado)
-      let waveForce = sin(distToOrigin * 0.02 - 1.5) * 40;
-      if (waveForce > 0) {
-        x += (dx / distToOrigin) * waveForce;
-        y += (dy / distToOrigin) * waveForce;
+      let x = center.x + cos(a) * r;
+      let y = center.y + sin(a) * r;
+
+      // Si no es el origen, deforma su forma por el impacto
+      if (clusterIndex !== 1) {
+        let dx = x - origin.x;
+        let dy = y - origin.y;
+        let dist = sqrt(dx*dx + dy*dy);
+        
+        // Empuje parabólico: las partículas más cercanas al origen salen volando más lejos
+        let pushForce = max(0, 100 - (dist * 0.15)) * random(0.5, 1.5); 
+        x += (dx / dist) * pushForce;
+        y += (dy / dist) * pushForce;
+      } else {
+        // El origen está denso e irradiando (pulso interno)
+        x += random(-15, 15);
+        y += random(-15, 15);
       }
 
-      pts.push({ x: x, y: y, species: 'A', clusterId: cid + 1 });
+      pts.push({ x: x, y: y, species: 'A', clusterId: center.cid });
     }
+
+    // 2. Corrientes de Impacto (Material viajando del Origen a los otros nodos)
+    let streamTargets = [centers[0], centers[2]];
+    for (let i = 0; i < streamCount; i++) {
+      let target = streamTargets[i % 2];
+      let progress = random(1);
+      
+      // Interpolación lineal desde el origen hacia el objetivo
+      let x = lerp(origin.x, target.x, progress);
+      let y = lerp(origin.y, target.y, progress);
+      
+      // Vector perpendicular para el ruido
+      let dx = target.x - origin.x;
+      let dy = target.y - origin.y;
+      let dist = sqrt(dx*dx + dy*dy);
+      let perpX = -dy / dist;
+      let perpY = dx / dist;
+
+      // Las corrientes son precisas al inicio, y turbulentas/explosivas al impactar
+      let turbulence = pow(progress, 2) * 80; 
+      let wave = sin(progress * 20 + i) * (20 + turbulence * 0.5);
+
+      x += perpX * wave + random(-turbulence, turbulence);
+      y += perpY * wave + random(-turbulence, turbulence);
+
+      // MUY IMPORTANTE: El material de la corriente hereda la identidad del origen (cid: 2)
+      // Así el color de origen literalmente invade visualmente a los otros dos.
+      pts.push({ x: x, y: y, species: 'A', clusterId: 2 });
+    }
+
     return pts;
   },
 
