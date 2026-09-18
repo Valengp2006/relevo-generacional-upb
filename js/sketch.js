@@ -136,8 +136,8 @@ function applyState(isSlideChange = false) {
     huellaCaptionEl.innerHTML = headline; // Usa innerHTML para renderizar los tags <b>
     huellaCaptionEl.classList.remove('visible');
     if (slide.hasPhoto) {
-      huellaCaptionEl.style.left = '45%';
-      huellaCaptionEl.style.maxWidth = '42vw';
+      huellaCaptionEl.style.left = '48%';
+      huellaCaptionEl.style.maxWidth = '32vw';
     } else {
       huellaCaptionEl.style.left = '50%';
       huellaCaptionEl.style.maxWidth = '70vw';
@@ -148,7 +148,7 @@ function applyState(isSlideChange = false) {
   let ctaContainer = document.getElementById('final-cta-container');
   let qrCode = document.querySelector('.qr-code');
   if (ctaContainer && qrCode) {
-    ctaContainer.style.left = slide.hasPhoto ? '45%' : '50%';
+    ctaContainer.style.left = slide.hasPhoto ? '48%' : '50%';
     
     if (slide.id === 1) {
       ctaContainer.style.display = 'flex';
@@ -213,7 +213,7 @@ function applyState(isSlideChange = false) {
   let opts = {};
   if (slide.edgeProgress !== undefined) opts.edgeProgress = slide.edgeProgress;
   opts.hasPhoto = slide.hasPhoto;
-  opts.centerX = slide.hasPhoto ? width * 0.45 : width * 0.5;
+  opts.centerX = slide.hasPhoto ? width * 0.48 : width * 0.5;
   let defaultCy = slide.hasPhoto ? height * 0.46 : height * 0.40;
   if (headline.includes("QR con memoria")) defaultCy = height * 0.38;
   opts.centerY = defaultCy;
