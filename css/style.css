@@ -274,6 +274,8 @@ canvas {
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.65);
   margin: 0;
   transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Clases de Composición Espacial Adaptativa */
@@ -650,4 +652,40 @@ canvas {
 
 .qr-code:hover {
   transform: scale(1.08) translateY(-5px);
+}
+
+/* ============================================================
+   Ajuste: el texto cede el lado derecho cuando la foto documental
+   está activa, para que nunca se superponga con ella
+   ============================================================ */
+#ui-overlay:has(#documentary-layer.active) .main-content.layout-center {
+  justify-content: flex-start;
+  padding-left: 6vw;
+  padding-right: calc(5vw + 560px + 5vw); /* ancho de la foto + su margen */
+  text-align: left;
+}
+
+#ui-overlay:has(#documentary-layer.active) .main-content.layout-center .title-container {
+  max-width: 620px;
+  margin: 0;
+  text-align: left;
+}
+
+/* La "huella" (subtítulo fantasma) también cede espacio */
+#ui-overlay:has(#documentary-layer.active) .huella-caption {
+  left: auto;
+  right: calc(5vw + 560px + 5vw);
+  transform: none;
+  max-width: 38vw;
+  text-align: left;
+}
+
+@media (max-width: 900px) {
+  #ui-overlay:has(#documentary-layer.active) .main-content.layout-center {
+    padding-right: calc(320px + 32px);
+  }
+  #ui-overlay:has(#documentary-layer.active) .huella-caption {
+    right: calc(320px + 32px);
+    max-width: 50vw;
+  }
 }
