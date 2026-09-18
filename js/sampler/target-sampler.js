@@ -239,7 +239,7 @@ class TargetSampler {
 
     let bandCenterY = height * 0.86;
     let maxTextWidth = hasPhoto ? width * 0.42 : width * 0.62;
-    let centerX = hasPhoto ? width * 0.33 : width / 2;
+    let centerX = hasPhoto ? width * 0.40 : width / 2;
 
     let fontSize = constrain(width * 0.022, 14, 22);
     pg.textSize(fontSize);

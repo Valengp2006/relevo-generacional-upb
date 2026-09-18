@@ -136,7 +136,7 @@ function applyState(isSlideChange = false) {
     huellaCaptionEl.innerHTML = headline; // Usa innerHTML para renderizar los tags <b>
     huellaCaptionEl.classList.remove('visible');
     if (slide.hasPhoto) {
-      huellaCaptionEl.style.left = '33%';
+      huellaCaptionEl.style.left = '40%';
       huellaCaptionEl.style.maxWidth = '42vw';
     } else {
       huellaCaptionEl.style.left = '50%';
@@ -211,7 +211,7 @@ function applyState(isSlideChange = false) {
   let opts = {};
   if (slide.edgeProgress !== undefined) opts.edgeProgress = slide.edgeProgress;
   opts.hasPhoto = slide.hasPhoto;
-  opts.centerX = slide.hasPhoto ? width * 0.33 : width * 0.5;
+  opts.centerX = slide.hasPhoto ? width * 0.40 : width * 0.5;
   opts.centerY = slide.hasPhoto ? height * 0.46 : height * 0.40;
   opts.radiusScale = slide.hasPhoto ? 0.65 : 0.85;
   
