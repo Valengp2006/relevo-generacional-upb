@@ -105,7 +105,6 @@ function applyState(isSlideChange = false) {
   if (docLayer) {
     if (slide.hasPhoto) {
       docLayer.classList.add('active');
-      if (topBar) topBar.classList.add('has-photo');
       let capText = (slide.photoCaption && slide.photoCaption[currentLang]) ? slide.photoCaption[currentLang] : '';
       if (caption) {
         caption.textContent = capText;
@@ -127,8 +126,7 @@ function applyState(isSlideChange = false) {
       }
     } else {
       docLayer.classList.remove('active');
-      if (topBar) topBar.classList.remove('has-photo');
-    }
+      }
   }
 
   let headline = slide.title[currentLang] || slide.title['pt'];
@@ -213,7 +211,7 @@ function applyState(isSlideChange = false) {
   let opts = {};
   if (slide.edgeProgress !== undefined) opts.edgeProgress = slide.edgeProgress;
   opts.hasPhoto = slide.hasPhoto;
-  opts.centerX = slide.hasPhoto ? width * 0.275 : width * 0.5;
+  opts.centerX = slide.hasPhoto ? width * 0.35 : width * 0.5;
   opts.centerY = height * 0.52;
   opts.radiusScale = slide.hasPhoto ? 0.65 : 0.85;
   

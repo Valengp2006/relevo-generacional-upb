@@ -39,7 +39,7 @@ const SCULPTURES = {
     let cx = options.centerX || w * 0.5;
     let cy = options.centerY || h * 0.53;
     let scl = options.radiusScale || 1.0;
-    let widthArch = w * 0.5 * scl;
+    let widthArch = w * 0.35 * scl;
     let heightArch = h * 0.35 * scl;
 
     let totalGraderias = floor(count * 0.85);

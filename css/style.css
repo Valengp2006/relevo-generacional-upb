@@ -609,12 +609,6 @@ canvas {
   color: var(--color-blue) !important;
   font-weight: 800 !important;
 }
-.top-bar {
-  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.top-bar.has-photo {
-  width: 55%;
-}
 
 /* Final CTA (QR + Instagram) */
 .final-cta-container {
