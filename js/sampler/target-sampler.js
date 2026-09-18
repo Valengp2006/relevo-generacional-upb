@@ -68,25 +68,29 @@ class TargetSampler {
    */
   wrapTextWithSpacing(pg, text, maxWidth, spacing) {
     if (!text) return [''];
-    let words = text.split(' ');
-    let lines = [];
-    let currentLine = '';
+    let explicitLines = text.split('\n');
+    let finalLines = [];
 
-    for (let i = 0; i < words.length; i++) {
-      let testLine = currentLine.length === 0 ? words[i] : currentLine + ' ' + words[i];
-      let testWidth = this.measureSpacedText(pg, testLine, spacing);
+    for (let j = 0; j < explicitLines.length; j++) {
+      let words = explicitLines[j].split(' ');
+      let currentLine = '';
 
-      if (testWidth > maxWidth && currentLine.length > 0) {
-        lines.push(currentLine);
-        currentLine = words[i];
-      } else {
-        currentLine = testLine;
+      for (let i = 0; i < words.length; i++) {
+        let testLine = currentLine.length === 0 ? words[i] : currentLine + ' ' + words[i];
+        let testWidth = this.measureSpacedText(pg, testLine, spacing);
+
+        if (testWidth > maxWidth && currentLine.length > 0) {
+          finalLines.push(currentLine);
+          currentLine = words[i];
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine.length > 0) {
+        finalLines.push(currentLine);
       }
     }
-    if (currentLine.length > 0) {
-      lines.push(currentLine);
-    }
-    return lines;
+    return finalLines;
   }
 
   /**

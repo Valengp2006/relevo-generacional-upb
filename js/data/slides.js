@@ -9,9 +9,9 @@ const SLIDES_DATA = [
     id: 1, act: 1,
     actTitle: { pt: "Ato 1 — Origem", es: "Acto 1 — Origen", en: "Act 1 — Origin" },
     title: {
-      pt: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO @centrodeeventosupb",
-      es: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO @centrodeeventosupb",
-      en: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO @centrodeeventosupb"
+      pt: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO\n@centrodeeventosupb",
+      es: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO\n@centrodeeventosupb",
+      en: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO\n@centrodeeventosupb"
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
@@ -37,9 +37,9 @@ const SLIDES_DATA = [
     id: 3, act: 1,
     actTitle: { pt: "Ato 1 — Origem", es: "Acto 1 — Origen", en: "Act 1 — Origin" },
     title: {
-      pt: "Los eventos no llegaron a la Universidad. La Universidad decidió encontrarse con el mundo.",
-      es: "Los eventos no llegaron a la Universidad. La Universidad decidió encontrarse con el mundo.",
-      en: "Los eventos no llegaron a la Universidad. La Universidad decidió encontrarse con el mundo."
+      pt: "Los eventos no llegaron a la Universidad.\nLa Universidad decidió encontrarse con el mundo.",
+      es: "Los eventos no llegaron a la Universidad.\nLa Universidad decidió encontrarse con el mundo.",
+      en: "Los eventos no llegaron a la Universidad.\nLa Universidad decidió encontrarse con el mundo."
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
@@ -65,9 +65,9 @@ const SLIDES_DATA = [
     id: 5, act: 1,
     actTitle: { pt: "Ato 1 — Origem", es: "Acto 1 — Origen", en: "Act 1 — Origin" },
     title: {
-      pt: "Los eventos nunca fueron el objetivo. El impacto sí.",
-      es: "Los eventos nunca fueron el objetivo. El impacto sí.",
-      en: "Los eventos nunca fueron el objetivo. El impacto sí."
+      pt: "Los eventos nunca fueron el objetivo.\nEl impacto sí.",
+      es: "Los eventos nunca fueron el objetivo.\nEl impacto sí.",
+      en: "Los eventos nunca fueron el objetivo.\nEl impacto sí."
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
@@ -79,9 +79,9 @@ const SLIDES_DATA = [
     id: 6, act: 2,
     actTitle: { pt: "Ato 2 — Comunidade", es: "Acto 2 — Comunidad", en: "Act 2 — Community" },
     title: {
-      pt: "Un evento trae personas. Una comunidad trae transformación.",
-      es: "Un evento trae personas. Una comunidad trae transformación.",
-      en: "Un evento trae personas. Una comunidad trae transformación."
+      pt: "Un evento trae personas.\nUna comunidad trae transformación.",
+      es: "Un evento trae personas.\nUna comunidad trae transformación.",
+      en: "Un evento trae personas.\nUna comunidad trae transformación."
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
@@ -109,9 +109,9 @@ const SLIDES_DATA = [
     id: 8, act: 2,
     actTitle: { pt: "Ato 2 — Comunidade", es: "Acto 2 — Comunidad", en: "Act 2 — Community" },
     title: {
-      pt: "La experiencia construye el camino. Las nuevas generaciones descubren nuevas rutas.",
-      es: "La experiencia construye el camino. Las nuevas generaciones descubren nuevas rutas.",
-      en: "La experiencia construye el camino. Las nuevas generaciones descubren nuevas rutas."
+      pt: "La experiencia construye el camino.\nLas nuevas generaciones descubren nuevas rutas.",
+      es: "La experiencia construye el camino.\nLas nuevas generaciones descubren nuevas rutas.",
+      en: "La experiencia construye el camino.\nLas nuevas generaciones descubren nuevas rutas."
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
@@ -124,9 +124,9 @@ const SLIDES_DATA = [
     id: 9, act: 2,
     actTitle: { pt: "Ato 2 — Comunidade", es: "Acto 2 — Comunidad", en: "Act 2 — Community" },
     title: {
-      pt: "Una visión. Dos generaciones.",
-      es: "Una visión. Dos generaciones.",
-      en: "Una visión. Dos generaciones."
+      pt: "Una visión.\nDos generaciones.",
+      es: "Una visión.\nDos generaciones.",
+      en: "Una visión.\nDos generaciones."
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
@@ -138,9 +138,9 @@ const SLIDES_DATA = [
     id: 10, act: 3,
     actTitle: { pt: "Ato 3 — Revezamento", es: "Acto 3 — Relevo", en: "Act 3 — Relay" },
     title: {
-      pt: "El crecimiento no ocurre cuando una generación reemplaza a otra. Ocurre cuando trabajan juntas.",
-      es: "El crecimiento no ocurre cuando una generación reemplaza a otra. Ocurre cuando trabajan juntas.",
-      en: "El crecimiento no ocurre cuando una generación reemplaza a otra. Ocurre cuando trabajan juntas."
+      pt: "El crecimiento no ocurre cuando una generación reemplaza a otra.\nOcurre cuando trabajan juntas.",
+      es: "El crecimiento no ocurre cuando una generación reemplaza a otra.\nOcurre cuando trabajan juntas.",
+      en: "El crecimiento no ocurre cuando una generación reemplaza a otra.\nOcurre cuando trabajan juntas."
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
@@ -152,9 +152,9 @@ const SLIDES_DATA = [
     id: 11, act: 3,
     actTitle: { pt: "Ato 3 — Revezamento", es: "Acto 3 — Relevo", en: "Act 3 — Relay" },
     title: {
-      pt: "Los jóvenes no son el futuro. Son el presente que muchas organizaciones aún no ven.",
-      es: "Los jóvenes no son el futuro. Son el presente que muchas organizaciones aún no ven.",
-      en: "Los jóvenes no son el futuro. Son el presente que muchas organizaciones aún no ven."
+      pt: "Los jóvenes no son el futuro.\nSon el presente que muchas organizaciones aún no ven.",
+      es: "Los jóvenes no son el futuro.\nSon el presente que muchas organizaciones aún no ven.",
+      en: "Los jóvenes no son el futuro.\nSon el presente que muchas organizaciones aún no ven."
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
@@ -166,9 +166,9 @@ const SLIDES_DATA = [
     id: 12, act: 3,
     actTitle: { pt: "Ato 3 — Revezamento", es: "Acto 3 — Relevo", en: "Act 3 — Relay" },
     title: {
-      pt: "El futuro no se hereda. Se construye.",
-      es: "El futuro no se hereda. Se construye.",
-      en: "El futuro no se hereda. Se construye."
+      pt: "El futuro no se hereda.\nSe construye.",
+      es: "El futuro no se hereda.\nSe construye.",
+      en: "El futuro no se hereda.\nSe construye."
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
@@ -180,9 +180,9 @@ const SLIDES_DATA = [
     id: 13, act: 4,
     actTitle: { pt: "Ato 4 — Abertura", es: "Acto 4 — Apertura", en: "Act 4 — Opening" },
     title: {
-      pt: "QR con memorias (pp móvil) QR redes @centrodeeventosupb",
-      es: "QR con memorias (pp móvil) QR redes @centrodeeventosupb",
-      en: "QR con memorias (pp móvil) QR redes @centrodeeventosupb"
+      pt: "QR con memorias (pp móvil)\nQR redes @centrodeeventosupb",
+      es: "QR con memorias (pp móvil)\nQR redes @centrodeeventosupb",
+      en: "QR con memorias (pp móvil)\nQR redes @centrodeeventosupb"
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
