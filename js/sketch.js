@@ -100,9 +100,12 @@ function applyState(isSlideChange = false) {
   let photoImg = document.getElementById('documentary-photo');
   let placeholder = document.getElementById('documentary-placeholder');
   let caption = document.getElementById('photo-caption');
+  let topBar = document.querySelector('.top-bar');
+
   if (docLayer) {
     if (slide.hasPhoto) {
       docLayer.classList.add('active');
+      if (topBar) topBar.classList.add('has-photo');
       let capText = (slide.photoCaption && slide.photoCaption[currentLang]) ? slide.photoCaption[currentLang] : '';
       if (caption) {
         caption.textContent = capText;
@@ -124,6 +127,7 @@ function applyState(isSlideChange = false) {
       }
     } else {
       docLayer.classList.remove('active');
+      if (topBar) topBar.classList.remove('has-photo');
     }
   }
 

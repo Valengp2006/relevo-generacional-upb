@@ -93,7 +93,7 @@ const SCULPTURES = {
 
     // Tres direcciones
     let angles = [PI + 0.35, PI - 0.35, HALF_PI - 0.2];
-    let maxDist = w * 0.30 * scl;
+    let maxDist = w * 0.22 * scl;
 
     // 2. Corrientes de partículas (Filamentos en expansión)
     for (let i = 0; i < flowCount; i++) {
@@ -116,7 +116,7 @@ const SCULPTURES = {
       let centerRX = cx + cos(angle) * maxDist;
       let centerRY = cy + sin(angle) * maxDist;
       
-      let r = random(w * 0.12 * scl);
+      let r = random(w * 0.08 * scl);
       let a = random(TWO_PI);
       
       pts.push({ 
