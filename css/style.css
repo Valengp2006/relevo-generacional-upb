@@ -528,3 +528,45 @@ canvas {
     max-width: 100%;
   }
 }
+
+/* Cross-fade del titular DOM: arranca invisible, se muestra cuando el texto
+   termina de "fusionarse" desde las partículas */
+.slide-title {
+  opacity: 0;
+}
+.slide-title.visible {
+  opacity: 1;
+}
+
+/* Sombra/huella: texto real, no partículas — claro pero legible */
+.huella-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 128px;
+  transform: translateX(-50%);
+  max-width: 70vw;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(1rem, 1.8vw, 1.6rem);
+  color: rgba(248, 250, 252, 0.55);
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 16;
+  transition: opacity 0.5s ease;
+}
+.huella-caption.visible {
+  opacity: 1;
+}
+
+/* Modo Performance reforzado: solo quedan los botones de navegación */
+#ui-overlay.presentation-mode .top-bar,
+#ui-overlay.presentation-mode .brand-lockup,
+#ui-overlay.presentation-mode .hud-center-group,
+#ui-overlay.presentation-mode .keyboard-hint,
+#ui-overlay.presentation-mode #btn-fullscreen,
+#ui-overlay.presentation-mode .narrative-container {
+  display: none !important;
+}

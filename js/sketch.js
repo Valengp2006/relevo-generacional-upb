@@ -1,14 +1,14 @@
 /**
  * Sketch Principal — Relevo Generacional (Fórum UPB × Future Leaders Forum)
- * Sistema generativo interactivo continuo:
- * - Ciclo 100% de partículas vivas:
- *   1. Al entrar a un slide, el texto nace como una Nube de partículas viva y orgánica (Fase A).
- *   2. Gradualmente las partículas se organizan hacia los trazos tipográficos (Fase B).
- *   3. El texto queda formado y consolidado con respiración sutil continua, sin vibraciones (Fase C/D).
- *   4. Al pulsar 'T' o el botón HUD: 1,440 partículas componen la escultura generativa y
- *      360 partículas forman la huella/sombra residual sobre el texto, garantizando legibilidad.
- * - Cero texto plano 2D ni sombras CSS; 100% partículas vivas en todo el ecosistema.
- * - Navegación fluida por teclado, controles HUD y gestos táctiles.
+ *
+ * NUEVA ARQUITECTURA (fusión partícula → DOM):
+ * - Fase A/B: nube y organización de partículas (igual que antes).
+ * - Fase C: texto formado con partículas (breve, ~0.8s), luego se desvanece
+ *   a la vez que aparece el <h1 class="slide-title"> real — cross-fade.
+ * - Escultura: al presionar T, el titular DOM se apaga, TODAS las partículas
+ *   reaparecen viajando a la figura, y la sombra aparece como texto DOM real
+ *   (.huella-caption) en vez de partículas.
+ * - Modo Performance (P): oculta todo excepto navegación prev/next.
  */
 
 let particleSystem;
@@ -18,6 +18,11 @@ let currentMode = CONFIG.modes.TEXT;
 let currentLang = CONFIG.defaultLanguage || 'pt';
 let slidePhaseTimer = 0.0;
 let isPresentationMode = false;
+let domTextVisible = false;
+
+const DISSOLVE_AT = 4.3; // segundos: cuándo el DOM toma el relevo del titular
+
+let slideTitleEl, huellaCaptionEl;
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight);
@@ -25,65 +30,53 @@ function setup() {
   frameRate(CONFIG.canvas.targetFPS || 60);
   pixelDensity(CONFIG.canvas.pixelDensity || 1);
 
-  // Inicializar el pool continuo de 1,800 partículas y el muestreador tipográfico
   particleSystem = new ParticleSystem(CONFIG.particles.count || 1800);
   sampler = new TargetSampler();
 
-  // Inicializar listeners de teclado, HUD y gestos
-  initKeyboardAndUIListeners();
+  slideTitleEl = document.getElementById('slide-title');
+  huellaCaptionEl = document.getElementById('huella-caption');
 
-  // Iniciar la experiencia en el primer slide
+  initKeyboardAndUIListeners();
   applyState(true);
 }
 
 function draw() {
   background(CONFIG.colors.bg);
 
-  // Evolución temporal de fases en modo TEXTO:
-  // Fase A (Nube viva): 0.0s a 1.8s
-  // Fase B (Organización): 1.8s a 3.5s
-  // Fase C/D (Texto consolidado respirando): 3.5s en adelante
   if (currentMode === CONFIG.modes.TEXT) {
     let dt = deltaTime / 1000.0;
     slidePhaseTimer += dt;
 
     if (slidePhaseTimer < 1.8) {
-      if (particleSystem.currentPhase !== 'TEXT_CLOUD') {
-        particleSystem.setPhase('TEXT_CLOUD');
-      }
+      if (particleSystem.currentPhase !== 'TEXT_CLOUD') particleSystem.setPhase('TEXT_CLOUD');
     } else if (slidePhaseTimer < 3.5) {
-      if (particleSystem.currentPhase !== 'TEXT_ORGANIZING') {
-        particleSystem.setPhase('TEXT_ORGANIZING');
-      }
+      if (particleSystem.currentPhase !== 'TEXT_ORGANIZING') particleSystem.setPhase('TEXT_ORGANIZING');
+    } else if (slidePhaseTimer < DISSOLVE_AT) {
+      if (particleSystem.currentPhase !== 'TEXT_FORMED') particleSystem.setPhase('TEXT_FORMED');
     } else {
-      if (particleSystem.currentPhase !== 'TEXT_FORMED') {
-        particleSystem.setPhase('TEXT_FORMED');
+      // Fusión: partículas a 0, titular DOM visible
+      if (!domTextVisible) {
+        particleSystem.setAllParticlesAlpha(0);
+        if (slideTitleEl) slideTitleEl.classList.add('visible');
+        domTextVisible = true;
       }
     }
   }
 
-  // Actualizar e ilustrar el ecosistema continuo de partículas y conexiones
   particleSystem.update();
   particleSystem.display();
 }
 
 function windowResized() {
-  if (sampler) {
-    sampler.reset();
-  }
+  if (sampler) sampler.reset();
   resizeCanvas(windowWidth, windowHeight);
   applyState(false);
 }
 
-/**
- * Aplica el estado del slide activo, sincronizando los textos DOM,
- * fotografía documental y objetivos del sistema de partículas.
- */
 function applyState(isSlideChange = false) {
   let slide = SLIDES_DATA[currentSlideIndex];
   if (!slide) return;
 
-  // 1. Actualizar textos de la interfaz HUD superior
   let actEl = document.getElementById('act-label');
   if (actEl) actEl.textContent = slide.actTitle[currentLang] || slide.actTitle['pt'];
 
@@ -92,25 +85,21 @@ function applyState(isSlideChange = false) {
     counterEl.textContent = `Slide ${String(slide.id).padStart(2, '0')} / ${String(SLIDES_DATA.length).padStart(2, '0')}`;
   }
 
-  // 2. Subtítulo y texto narrativo inferior
   let sub = slide.subtitle ? (slide.subtitle[currentLang] || '') : '';
   let narr = slide.narrative ? (slide.narrative[currentLang] || '') : '';
   let narrativeBox = document.querySelector('.narrative-container');
   let subEl = document.getElementById('slide-subtitle');
   let narrEl = document.getElementById('slide-narrative');
-
   if (subEl) subEl.textContent = sub;
   if (narrEl) narrEl.textContent = narr;
   if (narrativeBox) {
     narrativeBox.style.display = ((!sub || sub.trim() === '') && (!narr || narr.trim() === '')) ? 'none' : 'block';
   }
 
-  // 3. Capa Documental: fotografía institucional (hasPhoto)
   let docLayer = document.getElementById('documentary-layer');
   let photoImg = document.getElementById('documentary-photo');
   let placeholder = document.getElementById('documentary-placeholder');
   let caption = document.getElementById('photo-caption');
-
   if (docLayer) {
     if (slide.hasPhoto) {
       docLayer.classList.add('active');
@@ -119,7 +108,6 @@ function applyState(isSlideChange = false) {
         caption.textContent = capText;
         caption.style.display = capText ? 'block' : 'none';
       }
-
       if (slide.photoUrl && photoImg) {
         photoImg.onload = function() {
           photoImg.style.display = 'block';
@@ -139,21 +127,34 @@ function applyState(isSlideChange = false) {
     }
   }
 
-  // 4. Muestreo de objetivos para las partículas (Texto, Nube y Escultura)
   let headline = slide.title[currentLang] || slide.title['pt'];
+
+  // Titular DOM real — listo para el cross-fade, arranca invisible
+  if (slideTitleEl) {
+    slideTitleEl.textContent = headline;
+    slideTitleEl.classList.remove('visible');
+    let container = slideTitleEl.closest('.main-content');
+    if (container) {
+      container.classList.remove('layout-left', 'layout-center');
+      container.classList.add(slide.hasPhoto ? 'layout-left' : 'layout-center');
+    }
+  }
+  // Sombra/huella DOM real — mismo texto, arranca invisible
+  if (huellaCaptionEl) {
+    huellaCaptionEl.textContent = headline;
+    huellaCaptionEl.classList.remove('visible');
+  }
+  domTextVisible = false;
+
   let textTargets = sampler.sampleText(headline, CONFIG.particles.count, slide.hasPhoto);
   let cloudTargets = sampler.sampleCloud(sampler.lastTextLayout, CONFIG.particles.count);
 
   let sType = slide.sculptureType || 'nucleo';
   let generator = SCULPTURES[sType] || SCULPTURES['nucleo'];
   let opts = {};
-  if (slide.edgeProgress !== undefined) {
-    opts.edgeProgress = slide.edgeProgress;
-  }
+  if (slide.edgeProgress !== undefined) opts.edgeProgress = slide.edgeProgress;
   let sculptureTargets = generator(CONFIG.particles.count, width, height, opts);
-  let huellaTargets = sampler.sampleTextForHuella(headline, 360, slide.hasPhoto);
 
-  // 5. Límites de la huella del texto para la Zona de Calma en escultura
   let textBounds = null;
   if (sampler && sampler.lastTextLayout) {
     let layout = sampler.lastTextLayout;
@@ -173,14 +174,12 @@ function applyState(isSlideChange = false) {
     textTargets: textTargets,
     cloudTargets: cloudTargets,
     sculptureTargets: sculptureTargets,
-    huellaTargets: huellaTargets,
     act: slide.act,
     hasPhoto: slide.hasPhoto,
     sculptureType: sType,
     textBounds: textBounds
   };
 
-  // 6. Aplicar la secuencia al pool continuo sin crear/destruir objetos
   if (isSlideChange) {
     currentMode = CONFIG.modes.TEXT;
     slidePhaseTimer = 0.0;
@@ -188,26 +187,22 @@ function applyState(isSlideChange = false) {
   } else {
     particleSystem.setTargets(targetsData);
     if (currentMode === CONFIG.modes.TEXT) {
-      slidePhaseTimer = 1.4; // Reorganización suave al cambiar idioma
+      slidePhaseTimer = 1.4;
       particleSystem.setPhase('TEXT_ORGANIZING');
     } else {
-      particleSystem.setPhase('SCULPTURE_ACTIVE');
+      particleSystem.enterSculpture();
+      if (huellaCaptionEl) huellaCaptionEl.classList.add('visible');
     }
   }
 
   updateToggleButtonUI();
 }
 
-/**
- * Actualiza el texto, icono y estilo del botón Toggle en el HUD
- */
 function updateToggleButtonUI() {
   let toggleBtn = document.getElementById('btn-toggle-mode');
   let toggleLabel = document.getElementById('toggle-label');
   let toggleIcon = document.getElementById('toggle-icon');
-
   if (!toggleBtn) return;
-
   if (currentMode === CONFIG.modes.TEXT) {
     toggleBtn.classList.remove('mode-sculpture');
     if (toggleLabel) toggleLabel.textContent = 'Ver Escultura';
@@ -219,26 +214,26 @@ function updateToggleButtonUI() {
   }
 }
 
-/**
- * Alterna bidireccionalmente entre modo Texto y modo Escultura
- */
 function toggleMode() {
   if (currentMode === CONFIG.modes.TEXT) {
+    // → ESCULTURA: apaga el titular DOM, las partículas reaparecen formando la figura
     currentMode = CONFIG.modes.SCULPTURE;
     particleSystem.currentMode = 'sculpture';
-    particleSystem.setPhase('SCULPTURE_ACTIVE');
+    if (slideTitleEl) slideTitleEl.classList.remove('visible');
+    domTextVisible = false;
+    particleSystem.enterSculpture();
+    if (huellaCaptionEl) huellaCaptionEl.classList.add('visible');
   } else {
+    // → TEXTO: apaga la sombra DOM, las partículas reaparecen y vuelven a fusionarse
     currentMode = CONFIG.modes.TEXT;
     particleSystem.currentMode = 'text';
-    slidePhaseTimer = 4.0; // Pasa inmediatamente al texto consolidado
-    particleSystem.setPhase('TEXT_FORMED');
+    if (huellaCaptionEl) huellaCaptionEl.classList.remove('visible');
+    slidePhaseTimer = 2.6; // entra directo a ORGANIZING; draw() se encarga del resto
+    particleSystem.setPhase('TEXT_ORGANIZING');
   }
   updateToggleButtonUI();
 }
 
-/**
- * Controladores de Navegación e Idioma
- */
 function nextSlide() {
   if (currentSlideIndex < SLIDES_DATA.length - 1) {
     currentSlideIndex++;
@@ -273,62 +268,28 @@ function cycleLanguage() {
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen().catch(() => {});
-  } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    }
+  } else if (document.exitFullscreen) {
+    document.exitFullscreen();
   }
 }
 
-/**
- * Alterna el Modo Apresentação: oculta todos los controles de la interfaz
- * excepto las teclas para cambiar de diapositiva.
- */
 function togglePresentationMode(forceState) {
-  if (forceState !== undefined) {
-    isPresentationMode = forceState;
-  } else {
-    isPresentationMode = !isPresentationMode;
-  }
-
+  isPresentationMode = (forceState !== undefined) ? forceState : !isPresentationMode;
   let overlay = document.getElementById('ui-overlay');
-  if (overlay) {
-    overlay.classList.toggle('presentation-mode', isPresentationMode);
-  }
+  if (overlay) overlay.classList.toggle('presentation-mode', isPresentationMode);
 }
 
-/**
- * Configuración de Listeners de Teclado, Clic y Táctil
- */
 function initKeyboardAndUIListeners() {
   window.addEventListener('keydown', (e) => {
-    if (e.key === ' ' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      nextSlide();
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      prevSlide();
-    } else if (e.key === 't' || e.key === 'T') {
-      e.preventDefault();
-      toggleMode();
-    } else if (e.key === 'p' || e.key === 'P') {
-      e.preventDefault();
-      togglePresentationMode();
-    } else if (e.key === 'Escape') {
-      if (isPresentationMode) {
-        e.preventDefault();
-        togglePresentationMode(false);
-      }
-    } else if (e.key === 'l' || e.key === 'L') {
-      e.preventDefault();
-      cycleLanguage();
-    } else if (e.key === 'f' || e.key === 'F') {
-      e.preventDefault();
-      toggleFullscreen();
-    }
+    if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+    else if (e.key === 't' || e.key === 'T') { e.preventDefault(); toggleMode(); }
+    else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePresentationMode(); }
+    else if (e.key === 'Escape') { if (isPresentationMode) { e.preventDefault(); togglePresentationMode(false); } }
+    else if (e.key === 'l' || e.key === 'L') { e.preventDefault(); cycleLanguage(); }
+    else if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFullscreen(); }
   });
 
-  // Botones de interfaz HUD
   let prevBtn = document.getElementById('btn-prev');
   let nextBtn = document.getElementById('btn-next');
   let toggleBtn = document.getElementById('btn-toggle-mode');
@@ -344,25 +305,13 @@ function initKeyboardAndUIListeners() {
   if (exitPresBtn) exitPresBtn.addEventListener('click', () => togglePresentationMode(false));
 
   document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      setLanguage(e.target.getAttribute('data-lang'));
-    });
+    btn.addEventListener('click', (e) => setLanguage(e.target.getAttribute('data-lang')));
   });
 
-  // Soporte gestual táctil
   let touchStartX = 0;
-  window.addEventListener('touchstart', (e) => {
-    touchStartX = e.changedTouches[0].screenX;
-  }, false);
-
+  window.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, false);
   window.addEventListener('touchend', (e) => {
     let diff = e.changedTouches[0].screenX - touchStartX;
-    if (Math.abs(diff) > 50) {
-      if (diff < 0) {
-        nextSlide();
-      } else {
-        prevSlide();
-      }
-    }
+    if (Math.abs(diff) > 50) { if (diff < 0) nextSlide(); else prevSlide(); }
   }, false);
 }
