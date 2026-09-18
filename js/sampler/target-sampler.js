@@ -135,8 +135,10 @@ class TargetSampler {
     for (let i = 0; i < parsed.length; i++) {
       if (parsed[i].isBold) {
         target.fill(255, 0, 0, 255); // Red for highlighted particles
+        target.stroke(255, 0, 0, 255);
       } else {
         target.fill(255, 255, 255, 255); // White for normal particles
+        target.stroke(255, 255, 255, 255);
       }
       target.text(parsed[i].char, curX, y);
       curX += charWidths[i] + spacing;
@@ -366,7 +368,7 @@ class TargetSampler {
    * @param {number} alphaThreshold Umbral mínimo de opacidad (128 por defecto; sampleTextForHuella usa 40)
    */
   extractPoints(pg, desiredCount = 1800, minY = 0, maxY = height, alphaThreshold = 128) {
-    if (!pg.pixels || pg.pixels.length === 0) pg.loadPixels();
+    pg.loadPixels();
     let yStart = max(0, floor(minY));
     let yEnd = min(height, ceil(maxY));
 
@@ -382,8 +384,9 @@ class TargetSampler {
     }
 
     let ratio = activeCandidates / desiredCount;
-    let sampleStep = max(2, round(checkStep * sqrt(max(0.18, ratio))));
-    sampleStep = constrain(sampleStep, 2, 4); // Nunca adelgazar tanto que las letras queden punteadas
+    let sampleStep = max(2, round(checkStep * sqrt(max(0.1, ratio))));
+    // Permitir un paso más amplio para textos grandes, para que las partículas cubran todo el texto
+    sampleStep = constrain(sampleStep, 2, 7); 
 
     let points = [];
     for (let y = yStart; y < yEnd; y += sampleStep) {
@@ -397,6 +400,19 @@ class TargetSampler {
           points.push({ x: x, y: y, isHighlight: isHighlight });
         }
       }
+    }
+    
+    // Si aún así tenemos demasiados puntos, los mezclamos y cortamos
+    // para que la falta de partículas se distribuya por todo el texto y no solo abajo.
+    if (points.length > desiredCount) {
+      // Fisher-Yates shuffle
+      for (let i = points.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        let temp = points[i];
+        points[i] = points[j];
+        points[j] = temp;
+      }
+      points = points.slice(0, desiredCount);
     }
 
     if (points.length > 0 && points.length < desiredCount) {
