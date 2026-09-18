@@ -188,7 +188,7 @@ class TargetSampler {
 
     this.lastTextLayout = layout;
 
-    return this.extractPoints(pg, desiredCount, layout.startY - 10, layout.startY + layout.totalHeight + 15);
+    return this.extractPoints(pg, desiredCount, layout.startY - 40, layout.startY + layout.totalHeight + 80);
   }
 
   /**

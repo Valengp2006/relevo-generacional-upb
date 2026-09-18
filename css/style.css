@@ -562,8 +562,6 @@ canvas {
 }
 
 /* Modo Performance reforzado: solo quedan los botones de navegación */
-#ui-overlay.presentation-mode .top-bar,
-#ui-overlay.presentation-mode .brand-lockup,
 #ui-overlay.presentation-mode .hud-center-group,
 #ui-overlay.presentation-mode .keyboard-hint,
 #ui-overlay.presentation-mode #btn-fullscreen,

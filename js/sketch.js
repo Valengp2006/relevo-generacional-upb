@@ -129,16 +129,6 @@ function applyState(isSlideChange = false) {
 
   let headline = slide.title[currentLang] || slide.title['pt'];
 
-  // Titular DOM real — listo para el cross-fade, arranca invisible
-  if (slideTitleEl) {
-    slideTitleEl.textContent = headline;
-    slideTitleEl.classList.remove('visible');
-    let container = slideTitleEl.closest('.main-content');
-    if (container) {
-      container.classList.remove('layout-left', 'layout-center');
-      container.classList.add(slide.hasPhoto ? 'layout-left' : 'layout-center');
-    }
-  }
   // Sombra/huella DOM real — mismo texto, arranca invisible
   if (huellaCaptionEl) {
     huellaCaptionEl.textContent = headline;
@@ -148,6 +138,34 @@ function applyState(isSlideChange = false) {
 
   let textTargets = sampler.sampleText(headline, CONFIG.particles.count, slide.hasPhoto);
   let cloudTargets = sampler.sampleCloud(sampler.lastTextLayout, CONFIG.particles.count);
+
+  // Titular DOM real — posicionamiento ABSOLUTO para clonar exactamente a las partículas
+  if (slideTitleEl && sampler.lastTextLayout) {
+    let layout = sampler.lastTextLayout;
+    // Permite multi-línea con saltos de línea exactos a los que procesó el canvas
+    slideTitleEl.innerHTML = layout.lines.join('<br>');
+    slideTitleEl.classList.remove('visible');
+    
+    // Eliminamos la interferencia de layout-center o flex
+    let container = slideTitleEl.closest('.main-content');
+    if (container) {
+      container.style.display = 'block';
+      container.style.padding = '0';
+    }
+
+    // Posicionamos exactamente con los valores matemáticos de target-sampler.js
+    slideTitleEl.style.position = 'absolute';
+    slideTitleEl.style.left = layout.startX + 'px';
+    slideTitleEl.style.top = layout.startY + 'px';
+    slideTitleEl.style.transform = 'translate(-50%, 0)';
+    slideTitleEl.style.width = layout.maxWidth + 'px';
+    slideTitleEl.style.textAlign = 'center';
+    slideTitleEl.style.fontSize = layout.fontSize + 'px';
+    slideTitleEl.style.lineHeight = layout.lineHeight + 'px';
+    slideTitleEl.style.letterSpacing = layout.letterSpacing + 'px';
+    slideTitleEl.style.margin = '0';
+    slideTitleEl.style.padding = '0';
+  }
 
   let sType = slide.sculptureType || 'nucleo';
   let generator = SCULPTURES[sType] || SCULPTURES['nucleo'];
