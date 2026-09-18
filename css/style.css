@@ -655,20 +655,26 @@ canvas {
 }
 
 /* ============================================================
-   Ajuste: el texto cede el lado derecho cuando la foto documental
-   está activa, para que nunca se superponga con ella
+   Ajuste: el texto baja y se ensancha cuando la foto documental
+   está activa, para no quedar apretado junto a la escultura
    ============================================================ */
 #ui-overlay:has(#documentary-layer.active) .main-content.layout-center {
   justify-content: flex-start;
+  align-items: flex-end;
   padding-left: 6vw;
+  padding-bottom: 140px;
   padding-right: calc(5vw + 560px + 5vw); /* ancho de la foto + su margen */
   text-align: left;
 }
 
 #ui-overlay:has(#documentary-layer.active) .main-content.layout-center .title-container {
-  max-width: 620px;
+  max-width: min(760px, calc(100% - 20px));
   margin: 0;
   text-align: left;
+}
+
+#ui-overlay:has(#documentary-layer.active) .main-content.layout-center .slide-title {
+  font-size: clamp(2rem, 3.4vw, 3.2rem);
 }
 
 /* La "huella" (subtítulo fantasma) también cede espacio */
@@ -683,6 +689,10 @@ canvas {
 @media (max-width: 900px) {
   #ui-overlay:has(#documentary-layer.active) .main-content.layout-center {
     padding-right: calc(320px + 32px);
+    padding-bottom: 100px;
+  }
+  #ui-overlay:has(#documentary-layer.active) .main-content.layout-center .slide-title {
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
   }
   #ui-overlay:has(#documentary-layer.active) .huella-caption {
     right: calc(320px + 32px);
