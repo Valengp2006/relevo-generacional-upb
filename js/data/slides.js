@@ -9,11 +9,11 @@ const SLIDES_DATA = [
     id: 1, act: 1,
     actTitle: { pt: "Ato 1 — Origem", es: "Acto 1 — Origen", en: "Act 1 — Origin" },
     title: {
-      pt: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO",
-      es: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO",
-      en: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO"
+      pt: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO @centrodeeventosupb",
+      es: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO @centrodeeventosupb",
+      en: "RELEVO GENERACIONAL: LA VENTAJA QUE NADIE ESTÁ APROVECHANDO @centrodeeventosupb"
     },
-    subtitle: { pt: "@centrodeeventosupb", es: "@centrodeeventosupb", en: "@centrodeeventosupb" },
+    subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
     sculptureType: "nucleo",
@@ -37,15 +37,11 @@ const SLIDES_DATA = [
     id: 3, act: 1,
     actTitle: { pt: "Ato 1 — Origem", es: "Acto 1 — Origen", en: "Act 1 — Origin" },
     title: {
-      pt: "Los eventos no llegaron a la Universidad.",
-      es: "Los eventos no llegaron a la Universidad.",
-      en: "Los eventos no llegaron a la Universidad."
+      pt: "Los eventos no llegaron a la Universidad. La Universidad decidió encontrarse con el mundo.",
+      es: "Los eventos no llegaron a la Universidad. La Universidad decidió encontrarse con el mundo.",
+      en: "Los eventos no llegaron a la Universidad. La Universidad decidió encontrarse con el mundo."
     },
-    subtitle: {
-      pt: "La Universidad decidió encontrarse con el mundo.",
-      es: "La Universidad decidió encontrarse con el mundo.",
-      en: "La Universidad decidió encontrarse con el mundo."
-    },
+    subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
     sculptureType: "triada",
@@ -69,15 +65,11 @@ const SLIDES_DATA = [
     id: 5, act: 1,
     actTitle: { pt: "Ato 1 — Origem", es: "Acto 1 — Origen", en: "Act 1 — Origin" },
     title: {
-      pt: "Los eventos nunca fueron el objetivo.",
-      es: "Los eventos nunca fueron el objetivo.",
-      en: "Los eventos nunca fueron el objetivo."
+      pt: "Los eventos nunca fueron el objetivo. El impacto sí.",
+      es: "Los eventos nunca fueron el objetivo. El impacto sí.",
+      en: "Los eventos nunca fueron el objetivo. El impacto sí."
     },
-    subtitle: {
-      pt: "El impacto sí.",
-      es: "El impacto sí.",
-      en: "El impacto sí."
-    },
+    subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: true, photoUrl: "assets/images/slide-5.jpg",
     sculptureType: "irradiar",
@@ -87,15 +79,11 @@ const SLIDES_DATA = [
     id: 6, act: 2,
     actTitle: { pt: "Ato 2 — Comunidade", es: "Acto 2 — Comunidad", en: "Act 2 — Community" },
     title: {
-      pt: "Un evento trae personas.",
-      es: "Un evento trae personas.",
-      en: "Un evento trae personas."
+      pt: "Un evento trae personas. Una comunidad trae transformación.",
+      es: "Un evento trae personas. Una comunidad trae transformación.",
+      en: "Un evento trae personas. Una comunidad trae transformación."
     },
-    subtitle: {
-      pt: "Una comunidad trae transformación.",
-      es: "Una comunidad trae transformación.",
-      en: "Una comunidad trae transformación."
-    },
+    subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
     sculptureType: "comunidad",
@@ -121,15 +109,11 @@ const SLIDES_DATA = [
     id: 8, act: 2,
     actTitle: { pt: "Ato 2 — Comunidade", es: "Acto 2 — Comunidad", en: "Act 2 — Community" },
     title: {
-      pt: "La experiencia construye el camino.",
-      es: "La experiencia construye el camino.",
-      en: "La experiencia construye el camino."
+      pt: "La experiencia construye el camino. Las nuevas generaciones descubren nuevas rutas.",
+      es: "La experiencia construye el camino. Las nuevas generaciones descubren nuevas rutas.",
+      en: "La experiencia construye el camino. Las nuevas generaciones descubren nuevas rutas."
     },
-    subtitle: {
-      pt: "Las nuevas generaciones descubren nuevas rutas.",
-      es: "Las nuevas generaciones descubren nuevas rutas.",
-      en: "Las nuevas generaciones descubren nuevas rutas."
-    },
+    subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: true, photoUrl: "assets/images/slide-8.jpg",
     sculptureType: "comunidad_tejida",
@@ -140,15 +124,11 @@ const SLIDES_DATA = [
     id: 9, act: 2,
     actTitle: { pt: "Ato 2 — Comunidade", es: "Acto 2 — Comunidad", en: "Act 2 — Community" },
     title: {
-      pt: "Una visión.",
-      es: "Una visión.",
-      en: "Una visión."
+      pt: "Una visión. Dos generaciones.",
+      es: "Una visión. Dos generaciones.",
+      en: "Una visión. Dos generaciones."
     },
-    subtitle: {
-      pt: "Dos generaciones.",
-      es: "Dos generaciones.",
-      en: "Dos generaciones."
-    },
+    subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
     sculptureType: "vision",
@@ -158,15 +138,11 @@ const SLIDES_DATA = [
     id: 10, act: 3,
     actTitle: { pt: "Ato 3 — Revezamento", es: "Acto 3 — Relevo", en: "Act 3 — Relay" },
     title: {
-      pt: "El crecimiento no ocurre cuando una generación reemplaza a otra.",
-      es: "El crecimiento no ocurre cuando una generación reemplaza a otra.",
-      en: "El crecimiento no ocurre cuando una generación reemplaza a otra."
+      pt: "El crecimiento no ocurre cuando una generación reemplaza a otra. Ocurre cuando trabajan juntas.",
+      es: "El crecimiento no ocurre cuando una generación reemplaza a otra. Ocurre cuando trabajan juntas.",
+      en: "El crecimiento no ocurre cuando una generación reemplaza a otra. Ocurre cuando trabajan juntas."
     },
-    subtitle: {
-      pt: "Ocurre cuando trabajan juntas.",
-      es: "Ocurre cuando trabajan juntas.",
-      en: "Ocurre cuando trabajan juntas."
-    },
+    subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
     sculptureType: "especies",
@@ -176,15 +152,11 @@ const SLIDES_DATA = [
     id: 11, act: 3,
     actTitle: { pt: "Ato 3 — Revezamento", es: "Acto 3 — Relevo", en: "Act 3 — Relay" },
     title: {
-      pt: "Los jóvenes no son el futuro.",
-      es: "Los jóvenes no son el futuro.",
-      en: "Los jóvenes no son el futuro."
+      pt: "Los jóvenes no son el futuro. Son el presente que muchas organizaciones aún no ven.",
+      es: "Los jóvenes no son el futuro. Son el presente que muchas organizaciones aún no ven.",
+      en: "Los jóvenes no son el futuro. Son el presente que muchas organizaciones aún no ven."
     },
-    subtitle: {
-      pt: "Son el presente que muchas organizaciones aún no ven.",
-      es: "Son el presente que muchas organizaciones aún no ven.",
-      en: "Son el presente que muchas organizaciones aún no ven."
-    },
+    subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
     sculptureType: "especies",
@@ -194,15 +166,11 @@ const SLIDES_DATA = [
     id: 12, act: 3,
     actTitle: { pt: "Ato 3 — Revezamento", es: "Acto 3 — Relevo", en: "Act 3 — Relay" },
     title: {
-      pt: "El futuro no se hereda.",
-      es: "El futuro no se hereda.",
-      en: "El futuro no se hereda."
+      pt: "El futuro no se hereda. Se construye.",
+      es: "El futuro no se hereda. Se construye.",
+      en: "El futuro no se hereda. Se construye."
     },
-    subtitle: {
-      pt: "Se construye.",
-      es: "Se construye.",
-      en: "Se construye."
-    },
+    subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: true, photoUrl: "assets/images/slide-12.jpeg",
     sculptureType: "entretejido",
@@ -212,9 +180,9 @@ const SLIDES_DATA = [
     id: 13, act: 4,
     actTitle: { pt: "Ato 4 — Abertura", es: "Acto 4 — Apertura", en: "Act 4 — Opening" },
     title: {
-      pt: "@centrodeeventosupb",
-      es: "@centrodeeventosupb",
-      en: "@centrodeeventosupb"
+      pt: "QR con memorias (pp móvil) QR redes @centrodeeventosupb",
+      es: "QR con memorias (pp móvil) QR redes @centrodeeventosupb",
+      en: "QR con memorias (pp móvil) QR redes @centrodeeventosupb"
     },
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
