@@ -613,7 +613,7 @@ canvas {
 /* Final CTA (QR + Instagram) */
 .final-cta-container {
   position: absolute;
-  bottom: 8vh;
+  bottom: 4vh;
   left: 50%;
   transform: translateX(-50%);
   display: flex;

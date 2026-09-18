@@ -185,9 +185,10 @@ class TargetSampler {
     let lineHeight = fontSize * 1.34;
     let totalHeight = lines.length * lineHeight;
 
-    let startY = hasPhoto
-      ? max(height * 0.20, height * 0.46 - totalHeight / 2)
-      : max(height * 0.22, height * 0.40 - totalHeight / 2);
+    let cy = hasPhoto ? height * 0.46 : height * 0.40;
+    if (textString.includes("QR con memoria")) cy = height * 0.38;
+    
+    let startY = max(height * 0.15, cy - totalHeight / 2);
 
     return { lines, fontSize, letterSpacing, lineHeight, totalHeight, startX: centerX, startY, maxWidth: maxTextWidth, hasPhoto };
   }
@@ -239,7 +240,7 @@ class TargetSampler {
 
     let bandCenterY = height * 0.86;
     let maxTextWidth = hasPhoto ? width * 0.42 : width * 0.62;
-    let centerX = hasPhoto ? width * 0.40 : width / 2;
+    let centerX = hasPhoto ? width * 0.45 : width / 2;
 
     let fontSize = constrain(width * 0.022, 14, 22);
     pg.textSize(fontSize);
