@@ -1,10 +1,15 @@
 /**
  * Clase Particle — Representación cinemática individual de un nodo generativo.
  * Ecosistema visual narrativo continuo (Iteración 2 — Texto y Escultura de Partículas):
- * - Respiración viva continua: modulación orgánica de amplitud (Nube: alta, Transición: media, Texto: baja, Huella: eco sutil).
+ * - Respiración viva continua: modulación orgánica de amplitud (Nube: alta, Transición: media, Texto: cero, Huella: eco sutil).
  * - Doble rol en escultura: 1,440 partículas en escultura + 360 partículas en la huella/sombra del texto.
  * - Interpolación cromática continua de 2s sin sobrecarga de GC.
  * - Protección de esquinas institucionales y HUD superior.
+ * - AJUSTE: en TEXT_FORMED, las partículas se fijan por completo (sin respiración,
+ *   sin líneas de conexión) para que los bordes de las letras se lean nítidos.
+ * - AJUSTE: la evasión de la foto documental ahora clampa el TARGET antes de
+ *   perseguirlo (no empuja la posición ya llegada), evitando el forcejeo que
+ *   producía la superposición.
  */
 
 class Particle {
@@ -108,6 +113,8 @@ class Particle {
     this.currentBreathAmp = lerp(this.currentBreathAmp, this.targetBreathAmp, 0.04);
 
     // 2. Cálculo del vector de respiración viva orgánica (expansión/contracción con Perlin y senos)
+    //    AJUSTE: en TEXT_FORMED, targetBreathAmp ya llega en 0 desde ParticleSystem,
+    //    así que breathOffset se apaga solo — no hace falta un caso especial aquí.
     let bTime = frameCount * this.breathSpeed + this.breathPhase;
     let nVal = noise(this.pos.x * 0.005 + this.noiseOffset, bTime * 0.45);
     let breathAngle = map(nVal, 0, 1, -PI, PI) * 1.5;
@@ -116,6 +123,27 @@ class Particle {
 
     // Target efectivo combinado con la respiración
     let effectiveTarget = p5.Vector.add(this.target, breathOffset);
+
+    // 2b. AJUSTE — Evasión de la foto documental: se clampa el TARGET, no la posición.
+    //     Antes esto vivía como una fuerza reactiva post-hoc (sección 7b) que competía
+    //     cada frame contra arrive() tirando hacia el target original — de ahí la
+    //     superposición. Ahora la partícula simplemente persigue un punto que ya
+    //     está fuera de la zona de la tarjeta.
+    if (hasPhoto) {
+      let cardW = min(460, width * 0.44);
+      let cardH = 360;
+      let cardLeft = width * 0.95 - cardW - 25;
+      let cardRight = width * 0.95 + 25;
+      let cardTop = height * 0.5 - cardH * 0.5 - 25;
+      let cardBottom = height * 0.5 + cardH * 0.5 + 25;
+
+      if (
+        effectiveTarget.x >= cardLeft && effectiveTarget.x <= cardRight &&
+        effectiveTarget.y >= cardTop && effectiveTarget.y <= cardBottom
+      ) {
+        effectiveTarget.x = cardLeft - 30;
+      }
+    }
 
     // 3. Modulación de fuerza de arribo según la fase
     let targetPull = 1.0;
@@ -144,11 +172,14 @@ class Particle {
       this.applyForce(tangent);
     }
 
-    // 5. Estabilización de forma en texto consolidado (letras nítidas pero que respiran suavemente)
+    // 5. AJUSTE — Estabilización de forma en texto consolidado: snap total, sin residuo
+    //    de velocidad ni de distancia. Antes quedaba un remanente de movimiento
+    //    (vel *= 0.40, lerp 0.28) que — sumado a la respiración que antes nunca
+    //    llegaba a 0 — hacía que el borde de las letras nunca terminara de fijarse.
     let d = p5.Vector.dist(this.pos, effectiveTarget);
-    if (isTextFormed && d < 6.0) {
-      this.vel.mult(0.40);
-      this.pos.lerp(effectiveTarget, 0.28);
+    if (isTextFormed && d < 3.0) {
+      this.vel.mult(0);
+      this.pos.set(effectiveTarget.x, effectiveTarget.y);
     }
 
     // 6. Zona de Calma para partículas de la escultura (no afecta a las partículas de la huella)
@@ -183,7 +214,11 @@ class Particle {
       this.applyForce(createVector(0, 0.45));
     }
 
-    // 7b. Protección física contra invasión del área fotográfica documental (cuadrante derecho)
+    // 7b. [ELIMINADO] La protección reactiva contra la tarjeta de foto que vivía aquí
+    //     quedó reemplazada por el clamp del target en el paso 2b — era la causa de
+    //     la superposición, porque competía frame a frame contra arrive() tirando
+    //     hacia el target original sin desplazar. insidePhoto ya no se usa para
+    //     fuerza; se mantiene solo como bandera para la opacidad del paso 10.
     let insidePhoto = false;
     if (hasPhoto) {
       let cardW = min(460, width * 0.44);
@@ -192,15 +227,10 @@ class Particle {
       let cardRight = width * 0.95 + 25;
       let cardTop = height * 0.5 - cardH * 0.5 - 25;
       let cardBottom = height * 0.5 + cardH * 0.5 + 25;
-
-      if (
+      insidePhoto = (
         this.pos.x >= cardLeft && this.pos.x <= cardRight &&
         this.pos.y >= cardTop && this.pos.y <= cardBottom
-      ) {
-        insidePhoto = true;
-        let pushX = map(this.pos.x, cardLeft, cardRight, -0.65, -0.25);
-        this.applyForce(createVector(pushX, 0));
-      }
+      );
     }
 
     // 8. Integración física
