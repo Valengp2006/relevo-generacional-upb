@@ -6,12 +6,21 @@
  *   explícita para evitar solapamientos, trazo engrosado y anclaje sin ruido para contornos
  *   definidos con máxima nitidez.
  * 
+ * - sampleTextForHuella [NUEVO]:
+ *   Misma diagramación que sampleText, pero con blur aplicado al canvas oculto antes de
+ *   extraer píxeles. Con solo 360 partículas (frente a las 1,800 de sampleText), intentar
+ *   deletrear el mismo titular con nitidez es matemáticamente insuficiente — el resultado
+ *   se lee como ruido, no como sombra. El blur convierte esos mismos puntos escasos en una
+ *   masa difusa coherente, que es lo que una "huella" visual debe ser.
+ * 
  * - sampleWordSculpture (Estilo Jaume Plensa):
  *   Genera esculturas tridimensionales donde las palabras del guion llenan
  *   siluetas humanas y arquitectónicas sólidas, conservando la legibilidad.
  * 
  * - extractPoints:
  *   Muestreo de alta fidelidad que preserva aristas y contornos sin distorsión aleatoria.
+ *   Ahora acepta un umbral de alpha configurable (por defecto 128) para poder capturar
+ *   el halo difuso de sampleTextForHuella, que tiene mucho píxel de alpha bajo/medio.
  */
 
 class TargetSampler {
@@ -108,6 +117,53 @@ class TargetSampler {
   }
 
   /**
+   * Calcula la diagramación (layout) del titular sin dibujarlo — compartida por
+   * sampleText y sampleTextForHuella para que ambas coincidan en posición exacta.
+   */
+  computeLayout(pg, textString, hasPhoto) {
+    let len = textString ? textString.length : 0;
+    let fontSize, maxTextWidth, centerX;
+
+    if (hasPhoto) {
+      maxTextWidth = min(width * 0.44, 620);
+      centerX = width * 0.27;
+      if (len <= 25) {
+        fontSize = constrain(width * 0.048, 34, 54);
+      } else if (len <= 52) {
+        fontSize = constrain(width * 0.038, 26, 42);
+      } else {
+        fontSize = constrain(width * 0.030, 22, 34);
+      }
+    } else {
+      maxTextWidth = width * 0.82;
+      centerX = width / 2;
+      if (len <= 25) {
+        fontSize = constrain(width * 0.065, 46, 78);
+      } else if (len <= 52) {
+        fontSize = constrain(width * 0.050, 36, 62);
+      } else {
+        fontSize = constrain(width * 0.040, 28, 50);
+      }
+    }
+
+    let letterSpacing = max(hasPhoto ? 3.5 : 4.2, fontSize * (hasPhoto ? 0.078 : 0.082));
+
+    pg.textSize(fontSize);
+    pg.textStyle(BOLD);
+    pg.textFont('Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
+
+    let lines = this.wrapTextWithSpacing(pg, textString, maxTextWidth, letterSpacing);
+    let lineHeight = fontSize * 1.34;
+    let totalHeight = lines.length * lineHeight;
+
+    let startY = hasPhoto
+      ? max(height * 0.20, height * 0.46 - totalHeight / 2)
+      : max(height * 0.22, height * 0.40 - totalHeight / 2);
+
+    return { lines, fontSize, letterSpacing, lineHeight, totalHeight, startX: centerX, startY, maxWidth: maxTextWidth, hasPhoto };
+  }
+
+  /**
    * Renderiza el texto del titular con tipografía de alto contraste, separación de caracteres
    * y diagramación adaptativa (centrado general o dos columnas cuando hay fotografía documental).
    * @param {string} textString Texto del titular
@@ -118,83 +174,60 @@ class TargetSampler {
   sampleText(textString, desiredCount = 1800, hasPhoto = false) {
     this.ensureGraphics(width, height);
     let pg = this.offscreen;
-
     pg.clear();
 
-    let len = textString ? textString.length : 0;
-    let fontSize;
-    let maxTextWidth;
-    let centerX;
-    let startY;
+    let layout = this.computeLayout(pg, textString, hasPhoto);
 
-    if (hasPhoto) {
-      // DIAGRAMACIÓN EN COLUMNA IZQUIERDA (respeta el espacio fotográfico en el cuadrante derecho)
-      maxTextWidth = min(width * 0.44, 620);
-      centerX = width * 0.27; // Centrado armónico en la mitad izquierda de la pantalla
-
-      if (len <= 25) {
-        fontSize = constrain(width * 0.048, 34, 54);
-      } else if (len <= 52) {
-        fontSize = constrain(width * 0.038, 26, 42);
-      } else {
-        fontSize = constrain(width * 0.030, 22, 34);
-      }
-    } else {
-      // DIAGRAMACIÓN EDITORIAL CENTRADA A TODO LO ANCHO
-      maxTextWidth = width * 0.82;
-      centerX = width / 2;
-
-      if (len <= 25) {
-        fontSize = constrain(width * 0.065, 46, 78);
-      } else if (len <= 52) {
-        fontSize = constrain(width * 0.050, 36, 62);
-      } else {
-        fontSize = constrain(width * 0.040, 28, 50);
-      }
-    }
-
-    // Separación explícita entre letras (letter-spacing / tracking) para evitar solapes
-    let letterSpacing = max(hasPhoto ? 3.5 : 4.2, fontSize * (hasPhoto ? 0.078 : 0.082));
-
-    pg.textSize(fontSize);
-    pg.textStyle(BOLD);
-    pg.textFont('Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
-
-    // Trazo engrosado y definido para dar masa y nitidez a los glifos
     pg.fill(255, 255, 255, 255);
     pg.stroke(255, 255, 255, 255);
-    pg.strokeWeight(max(2.2, fontSize * 0.074));
+    pg.strokeWeight(max(2.2, layout.fontSize * 0.074));
 
-    // Salto de línea adaptativo con espaciado
-    let lines = this.wrapTextWithSpacing(pg, textString, maxTextWidth, letterSpacing);
-    let lineHeight = fontSize * 1.34;
-    let totalHeight = lines.length * lineHeight;
-
-    // Centrado vertical coordinado
-    if (hasPhoto) {
-      startY = max(height * 0.20, height * 0.46 - totalHeight / 2);
-    } else {
-      startY = max(height * 0.22, height * 0.40 - totalHeight / 2);
+    for (let i = 0; i < layout.lines.length; i++) {
+      this.drawSpacedLine(pg, layout.lines[i], layout.startX, layout.startY + i * layout.lineHeight, layout.letterSpacing);
     }
 
-    for (let i = 0; i < lines.length; i++) {
-      this.drawSpacedLine(pg, lines[i], centerX, startY + i * lineHeight, letterSpacing);
+    this.lastTextLayout = layout;
+
+    return this.extractPoints(pg, desiredCount, layout.startY - 10, layout.startY + layout.totalHeight + 15);
+  }
+
+  /**
+   * [NUEVO] Versión difuminada del titular, exclusiva para alimentar la "huella"
+   * residual en modo escultura (las 360 partículas que quedan marcando el texto
+   * mientras el resto compone la figura). Misma posición/tamaño que sampleText
+   * (usa computeLayout compartido) para que la huella caiga exactamente donde
+   * estaría el texto real, pero renderizada con blur para que se lea como masa
+   * difusa coherente y no como ruido disperso.
+   * @param {string} textString Texto del titular
+   * @param {number} desiredCount Cantidad objetivo de partículas (~360)
+   * @param {boolean} hasPhoto Debe coincidir con el hasPhoto del slide, para alinear posición
+   * @param {number} blurPx Radio de blur en píxeles (por defecto proporcional al tamaño de fuente)
+   */
+  sampleTextForHuella(textString, desiredCount = 360, hasPhoto = false, blurPx = null) {
+    this.ensureGraphics(width, height);
+    let pg = this.offscreen;
+    pg.clear();
+
+    let layout = this.computeLayout(pg, textString, hasPhoto);
+    let blur = blurPx !== null ? blurPx : constrain(layout.fontSize * 0.16, 6, 14);
+
+    pg.fill(255, 255, 255, 255);
+    pg.noStroke();
+
+    pg.drawingContext.save();
+    pg.drawingContext.filter = `blur(${blur}px)`;
+
+    for (let i = 0; i < layout.lines.length; i++) {
+      this.drawSpacedLine(pg, layout.lines[i], layout.startX, layout.startY + i * layout.lineHeight, layout.letterSpacing);
     }
 
-    // Guardar layout para la huella residual de partículas y la nube viva
-    this.lastTextLayout = {
-      lines: lines,
-      fontSize: fontSize,
-      letterSpacing: letterSpacing,
-      lineHeight: lineHeight,
-      totalHeight: totalHeight,
-      startX: centerX,
-      startY: startY,
-      maxWidth: maxTextWidth,
-      hasPhoto: hasPhoto
-    };
+    pg.drawingContext.filter = 'none';
+    pg.drawingContext.restore();
 
-    return this.extractPoints(pg, desiredCount, startY - 10, startY + totalHeight + 15);
+    // Umbral bajo (40 en vez de 128): el blur reparte la opacidad en un halo amplio
+    // de alpha medio/bajo — con el umbral normal capturaríamos solo el núcleo y
+    // perderíamos justo la difusión que buscamos.
+    return this.extractPoints(pg, desiredCount, layout.startY - blur * 2, layout.startY + layout.totalHeight + blur * 2, 40);
   }
 
   /**
@@ -235,12 +268,10 @@ class TargetSampler {
       return this.sampleText(words || 'RELEVO GENERACIONAL', desiredCount);
     }
 
-    // 1. Dibujar silueta sólida
     pg.push();
     sc.draw(pg, width, height);
     pg.pop();
 
-    // 2. Máscara de composición 'source-in'
     pg.drawingContext.save();
     pg.drawingContext.globalCompositeOperation = 'source-in';
 
@@ -280,7 +311,6 @@ class TargetSampler {
     pg.pop();
     pg.drawingContext.restore();
 
-    // 3. Realce de contorno estructural sutil
     if (sc.drawContour) {
       pg.drawingContext.save();
       pg.drawingContext.globalCompositeOperation = 'source-over';
@@ -295,10 +325,11 @@ class TargetSampler {
   }
 
   /**
-   * Extrae ~desiredCount coordenadas de píxeles activos (alpha > 128)
+   * Extrae ~desiredCount coordenadas de píxeles activos (alpha > alphaThreshold)
    * sin introducir distorsiones aleatorias que desdibujen los trazos tipográficos.
+   * @param {number} alphaThreshold Umbral mínimo de opacidad (128 por defecto; sampleTextForHuella usa 40)
    */
-  extractPoints(pg, desiredCount = 1800, minY = 0, maxY = height) {
+  extractPoints(pg, desiredCount = 1800, minY = 0, maxY = height, alphaThreshold = 128) {
     pg.loadPixels();
     let yStart = max(0, floor(minY));
     let yEnd = min(height, ceil(maxY));
@@ -308,7 +339,7 @@ class TargetSampler {
     for (let y = yStart; y < yEnd; y += checkStep) {
       for (let x = 0; x < width; x += checkStep) {
         let idx = (x + y * width) * 4;
-        if (pg.pixels[idx + 3] > 128) {
+        if (pg.pixels[idx + 3] > alphaThreshold) {
           activeCandidates++;
         }
       }
@@ -321,23 +352,18 @@ class TargetSampler {
     for (let y = yStart; y < yEnd; y += sampleStep) {
       for (let x = 0; x < width; x += sampleStep) {
         let idx = (x + y * width) * 4;
-        if (pg.pixels[idx + 3] > 128) {
+        if (pg.pixels[idx + 3] > alphaThreshold) {
           points.push({ x: x, y: y });
         }
       }
     }
 
-    // Relleno de puntos hasta completar 1,800: duplicación exacta sobre trazo SIN ruido aleatorio
-    // para mantener contornos tipográficos impecables
     if (points.length > 0 && points.length < desiredCount) {
       let origLen = points.length;
       let diff = desiredCount - origLen;
       for (let i = 0; i < diff; i++) {
         let p = points[i % origLen];
-        points.push({
-          x: p.x,
-          y: p.y
-        });
+        points.push({ x: p.x, y: p.y });
       }
     }
 
@@ -345,7 +371,6 @@ class TargetSampler {
       points.length = desiredCount;
     }
 
-    // Ordenamiento espacial ordenado por flujo visual para interpolación limpia
     points.sort((a, b) => (a.x + a.y * 0.5) - (b.x + b.y * 0.5));
 
     return points;
