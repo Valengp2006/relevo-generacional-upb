@@ -212,7 +212,7 @@ function applyState(isSlideChange = false) {
   if (slide.edgeProgress !== undefined) opts.edgeProgress = slide.edgeProgress;
   opts.hasPhoto = slide.hasPhoto;
   opts.centerX = slide.hasPhoto ? width * 0.35 : width * 0.5;
-  opts.centerY = height * 0.52;
+  opts.centerY = slide.hasPhoto ? height * 0.46 : height * 0.40;
   opts.radiusScale = slide.hasPhoto ? 0.65 : 0.85;
   
   let sculptureTargets = generator(CONFIG.particles.count, width, height, opts);
