@@ -568,3 +568,12 @@ canvas {
 #ui-overlay.presentation-mode .narrative-container {
   display: none !important;
 }
+
+/* Resaltado de palabras clave en el DOM (texto nítido y huella) */
+.slide-title b, .huella-caption b {
+  color: var(--color-blue);
+  font-weight: 800;
+}
+.huella-caption b {
+  font-weight: 700;
+}

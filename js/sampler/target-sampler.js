@@ -54,7 +54,8 @@ class TargetSampler {
    */
   measureSpacedText(pg, str, spacing) {
     if (!str) return 0;
-    let chars = str.split('');
+    let cleanStr = str.replace(/<\/?b>/g, '');
+    let chars = cleanStr.split('');
     let w = 0;
     for (let i = 0; i < chars.length; i++) {
       w += pg.textWidth(chars[i]);
@@ -99,7 +100,8 @@ class TargetSampler {
    */
   drawSpacedLine(target, str, centerX, y, spacing) {
     if (!str) return;
-    let chars = str.split('');
+    let cleanStr = str.replace(/<\/?b>/g, '');
+    let chars = cleanStr.split('');
     let charWidths = [];
     let totalW = 0;
 
