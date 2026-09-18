@@ -188,7 +188,7 @@ class TargetSampler {
 
     this.lastTextLayout = layout;
 
-    return this.extractPoints(pg, desiredCount, layout.startY - 40, layout.startY + layout.totalHeight + 80);
+    return this.extractPoints(pg, desiredCount, 0, height, 128);
   }
 
   /**
@@ -236,7 +236,7 @@ class TargetSampler {
     pg.drawingContext.filter = 'none';
     pg.drawingContext.restore();
 
-    return this.extractPoints(pg, desiredCount, startY - blur * 2, startY + totalHeight + blur * 2, 40);
+    return this.extractPoints(pg, desiredCount, 0, height, 40);
   }
 
   /**

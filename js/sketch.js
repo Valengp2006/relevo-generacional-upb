@@ -153,16 +153,24 @@ function applyState(isSlideChange = false) {
       container.style.padding = '0';
     }
 
-    // Posicionamos exactamente con los valores matemáticos de target-sampler.js
+    // p5.js con textAlign(LEFT, TOP) dibuja el glifo desde la coordenada y exacta.
+    // CSS con line-height > font-size agrega un "half-leading" encima y debajo del glifo.
+    // Para alinear perfectamente el DOM con el canvas, debemos restar ese espacio superior en CSS,
+    // y además compensar la altura de las mayúsculas (fudge factor ~10-12% del fontSize).
+    let halfLeading = (layout.lineHeight - layout.fontSize) / 2;
+    let p5TopOffset = layout.fontSize * 0.12; 
+    let finalTop = layout.startY - halfLeading - p5TopOffset;
+
     slideTitleEl.style.position = 'absolute';
     slideTitleEl.style.left = layout.startX + 'px';
-    slideTitleEl.style.top = layout.startY + 'px';
+    slideTitleEl.style.top = finalTop + 'px';
     slideTitleEl.style.transform = 'translate(-50%, 0)';
     slideTitleEl.style.width = layout.maxWidth + 'px';
     slideTitleEl.style.textAlign = 'center';
     slideTitleEl.style.fontSize = layout.fontSize + 'px';
     slideTitleEl.style.lineHeight = layout.lineHeight + 'px';
     slideTitleEl.style.letterSpacing = layout.letterSpacing + 'px';
+    slideTitleEl.style.fontWeight = '700';
     slideTitleEl.style.margin = '0';
     slideTitleEl.style.padding = '0';
   }
