@@ -44,7 +44,7 @@ const SLIDES_DATA = [
     subtitle: { pt: "", es: "", en: "" },
     narrative: { pt: "", es: "", en: "" },
     hasPhoto: false, photoUrl: null,
-    sculptureType: "ramificacion",
+    sculptureType: "apertura",
     layout: "layout-tension"
   },
   {

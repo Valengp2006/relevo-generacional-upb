@@ -141,7 +141,7 @@ class ParticleSystem {
         let gVar = (i % 7 === 0) ? 45 : 33;
         let bVar = (i % 7 === 0) ? 148 : 138;
         p.setTargetRGB(rVar, gVar, bVar);
-      } else if (this.currentSculptureType === 'auditorio' || this.currentSculptureType === 'ramificacion') {
+      } else if (this.currentSculptureType === 'auditorio' || this.currentSculptureType === 'apertura') {
         if (i % 5 === 0) {
           p.setTargetRGB(0, 180, 216);
         } else {

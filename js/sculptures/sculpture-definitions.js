@@ -70,32 +70,60 @@ const SCULPTURES = {
     return pts;
   },
 
-  // SLIDE 3: Ramificación (El auditorio se rompe)
-  ramificacion: function(count, w, h, options = {}) {
+  // SLIDE 3: Apertura (El auditorio se abre y expande hacia el mundo)
+  apertura: function(count, w, h, options = {}) {
     let pts = [];
     let cx = w * 0.65; // Desplazado a la derecha por layout-tension
     let cy = h * 0.5;
-    let rBase = w * 0.25;
-
-    // Tres raíces nacientes
-    let angles = [PI + 0.3, PI - 0.3, HALF_PI];
     
-    for (let i = 0; i < count; i++) {
+    let coreCount = floor(count * 0.25);
+    let flowCount = floor(count * 0.35);
+    let regionCount = count - coreCount - flowCount;
+
+    // 1. Núcleo Universitario (Compacto pero rompiéndose)
+    let coreR = w * 0.08;
+    for (let i = 0; i < coreCount; i++) {
+      let r = random(coreR);
+      let a = random(TWO_PI);
+      pts.push({ x: cx + cos(a)*r, y: cy + sin(a)*r, species: 'A', clusterId: 1 });
+    }
+
+    // Tres direcciones
+    let angles = [PI + 0.35, PI - 0.35, HALF_PI - 0.2];
+    let maxDist = w * 0.30;
+
+    // 2. Corrientes de partículas (Filamentos en expansión)
+    for (let i = 0; i < flowCount; i++) {
       let branch = i % 3;
-      let progress = pow(random(1), 2.5); // Mayor densidad cerca del origen
-      let angle = angles[branch] + random(-0.2, 0.2) * (1 - progress);
-      let dist = progress * rBase;
+      let progress = random(1);
+      // Las corrientes ondulan ligeramente
+      let wave = sin(progress * 10 + branch) * (w * 0.02);
+      let angle = angles[branch];
+      let dist = progress * maxDist;
+      
+      let x = cx + cos(angle) * dist + cos(angle + HALF_PI) * wave;
+      let y = cy + sin(angle) * dist + sin(angle + HALF_PI) * wave;
+      pts.push({ x: x, y: y, species: 'B', clusterId: branch + 2 });
+    }
 
-      // El origen aún conserva un poco de la forma rígida
-      let rigidNoise = (1 - progress) * random(-10, 10);
-
-      pts.push({
-        x: cx + cos(angle) * dist + rigidNoise,
-        y: cy + sin(angle) * dist + rigidNoise,
-        species: 'A',
-        clusterId: branch + 1
+    // 3. Regiones incompletas en los extremos
+    for (let i = 0; i < regionCount; i++) {
+      let branch = i % 3;
+      let angle = angles[branch];
+      let centerRX = cx + cos(angle) * maxDist;
+      let centerRY = cy + sin(angle) * maxDist;
+      
+      let r = random(w * 0.12);
+      let a = random(TWO_PI);
+      
+      pts.push({ 
+        x: centerRX + cos(a) * r, 
+        y: centerRY + sin(a) * r * 0.6, // Óvalos orgánicos
+        species: 'A', 
+        clusterId: branch + 2 
       });
     }
+
     return pts;
   },
 
